@@ -2,40 +2,14 @@
 #ifndef HXMMXH_TIMESTAMP_H
 #define HXMMXH_TIMESTAMP_H
 
+#include "Comparable.h"
+
 #include <cinttypes> //int64_t
 #include <string>
 #include <sys/time.h> //time_t
 
 namespace hxmmxh
 {
-//equality_comparable：要求提供==，可自动实现!=;
-//less_than_comparable：要求提供<，可自动实现>、<=、>=;
-template <class T>
-class equality_comparable_hxmmxh
-{
-    friend bool operator!=(const T &lhs, const T &rhs)
-    {
-        return !(lhs == rhs);
-    }
-};
-
-template <class T>
-class less_than_comparable_hxmmxh
-{
-    friend bool operator>=(const T &lhs, const T &rhs)
-    {
-        return !(lhs < rhs);
-    }
-    friend bool operator>(const T &lhs, const T &rhs)
-    {
-        return rhs < lhs;
-    }
-    friend bool operator<=(const T &lhs, const T &rhs)
-    {
-        return !(lhs > rhs);
-    }
-};
-
 //提供更精确的Unix Timestamp
 //系统时间只精确到秒，现在精确到微妙
 //其含义是1970年01月01日00时00分00秒起至现在的的总微秒数
