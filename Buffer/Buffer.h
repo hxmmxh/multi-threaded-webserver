@@ -262,14 +262,6 @@ public:
     {
         prepend(&x, sizeof x);
     }
-    void prepend(const void * /*restrict*/ data, size_t len)
-    {
-        assert(len <= prependableBytes());
-        readerIndex_ -= len;
-        const char *d = static_cast<const char *>(data);
-        std::copy(d, d + len, begin() + readerIndex_);
-    }
-
     void prepend(const void *data, size_t len)
     {
         assert(len <= prependableBytes());
@@ -293,7 +285,7 @@ public:
         return buffer_.capacity();
     }
 
-    //ssize_t readFd(int fd, int *savedErrno);
+    ssize_t readFd(int fd, int *savedErrno);
 
 private:
     //返回buffer_的第一个元素的指针
