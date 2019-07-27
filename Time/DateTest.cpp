@@ -1,5 +1,4 @@
 #include "Date.h"
-#include "Date.cpp"
 
 #include <iostream>
 

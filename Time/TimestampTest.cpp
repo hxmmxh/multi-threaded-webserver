@@ -1,10 +1,10 @@
 #include "Timestamp.h"
-#include "Timestamp.cpp"
 
 #include <vector>
 #include <iostream>
 
 using namespace std;
+using namespace hxmmxh;
 
 void passByConstReference(const Timestamp &x)
 {
@@ -32,7 +32,7 @@ void benchmark()
     //返回的是秒数
     cout << timeDifference(stamps.back(), stamps.front()) << '\n';
     //统计创建两个时间戳之间的不同时间间隔的次数
-    int increments[1000] = {0};
+    int increments[100] = {0};
     int64_t start = stamps.front().microSecondsSinceEpoch();
     for (int i = 1; i < kNumber; ++i)
     {
@@ -44,7 +44,7 @@ void benchmark()
         {
             cout << "reverse!\n";
         }
-        else if (inc < 1000)
+        else if (inc < 100)
         {
             ++increments[inc];
         }
@@ -54,7 +54,7 @@ void benchmark()
         }
     }
 
-    for (int i = 0; i < 1000; ++i)
+    for (int i = 0; i < 100; ++i)
     {
         if(increments[i]>0)
             cout << i << " : " << increments[i]<<'\n';

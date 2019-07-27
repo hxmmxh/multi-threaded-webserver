@@ -1,6 +1,7 @@
 #include "LogStream.h"
 
 #include <iostream>
+#include <limits>
 
 using namespace std;
 using namespace hxmmxh;

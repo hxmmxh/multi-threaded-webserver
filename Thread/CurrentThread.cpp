@@ -1,7 +1,10 @@
 #include "CurrentThread.h"
 
-#include <sys/syscall.h> //syscall(SYS-gettid)
+#include <unistd.h>      //syscall
+#include <sys/syscall.h> //SYS-gettid
 
+namespace hxmmxh
+{
 namespace CurrentThread
 {
 
@@ -17,7 +20,7 @@ __thread int t_tidStringLength = 6;
 __thread const char *t_threadName = "unknown";
 //在本人系统上pid_t是int64_t类型，先注释
 //static_assert(std::is_same<int, pid_t>::value, "pid_t should be int64_t");
-void CurrentThread::cacheTid()
+void cacheTid()
 {
   if (t_cachedTid == 0)
   {
@@ -26,9 +29,11 @@ void CurrentThread::cacheTid()
   }
 }
 
-bool CurrentThread::isMainThread()
+bool isMainThread()
 {
+  //getpid获取的是进程号，每个进程的第一个线程号等于进程号
   return tid() == ::getpid();
 }
 
 } // namespace CurrentThread
+} // namespace hxmmxh
