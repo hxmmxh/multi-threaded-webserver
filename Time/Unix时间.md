@@ -1,24 +1,30 @@
 
 
-## 定义
-GMT和UTC
-
+## 基础定义概念
+### GMT和UTC
 GMT，即格林尼治标准时间，也就是世界时。GMT的正午是指当太阳横穿格林尼治子午线（本初子午线）时的时间。但由于地球自转不均匀不规则，导致GMT不精确，现在已经不再作为世界标准时间使用。
 
 UTC，即协调世界时。UTC是以原子时秒长为基础，在时刻上尽量接近于GMT的一种时间计量系统。为确保UTC与GMT相差不会超过0.9秒，在有需要的情况下会在UTC内加上正或负闰秒。UTC现在作为世界标准时间使用。
+
+### JulianDay儒略日
+* 在儒略周期内以连续的日数计算时间的计时法
+*儒略日数（Julian Day Number，JDN）：从格林威治标准时间的中午开始，包含一个整天的时间，起点的时间（0日）回溯至儒略历的公元前4713年1月1日中午12点
+* 儒略日期（Julian date，JD）：是以格林威治标准时中午12:00的儒略日加上那一天的瞬时时间的分数。儒略日期是儒略日添加小数部分所表示的儒略日数
+* 儒略周期（Julian Period）: 开始于公元前4713年，每一周期长达7980年，下一个儒略周期将开始于公元3268年
+
 ### Unix时间戳(Unix timestamp)
 定义为从格林威治时间1970年01月01日00时00分00秒起至现在的总秒数
 ### 溢出问题
 如果32位二进制数字表示时间。此类系统的Unix时间戳最多可以使用到格林威治时间2038年01月19日03时14分07秒（二进制：01111111 11111111 11111111 11111111）。其后一秒，二进制数字会变为10000000 00000000 00000000 00000000，发生溢出错误，造成系统将时间误解为1901年12月13日20时45分52秒。这很可能会引起软件故障，甚至是系统瘫痪。使用64位二进制数字表示时间的系统（最多可以使用到格林威治时间292,277,026,596年12月04日15时30分08秒）则基本不会遇到这类溢出问题。
 
-* [gettimeofday](https://www.cnblogs.com/xiaojianliu/p/8477461.html)
 *[时间函数](https://blog.csdn.net/u010507799/article/details/52288190)
 [11](https://blog.csdn.net/u014260855/article/details/44403287)
 
-## 常用函数
+## <time.h>常用函数
 ### 常用结构体
 ```cpp
 #include<time.h>
+//时间结构体
 struct tm
 {
     int tm_sec;   //代表目前秒数，正常范围为0-59，但允许至61秒
@@ -31,11 +37,13 @@ struct tm
     int tm_yday;  //从今年1月1日算起至今的天数，范围为0-365
     int tm_isdst; //夏令时标识符，实行夏令时的时候，tm_isdst为正。不实行夏令时的进候，tm_isdst为0；不了解情况时，tm_isdst()为负
 };
+//更高精度的timr_t，精确到微妙
 struct timeval
 {
   long tv_sec;  //秒
   long tv_usec; //微秒
 };
+//时区
 struct timezone
 {
   int tz_minuteswest; //和格林威治时间差了多少分钟
@@ -52,8 +60,8 @@ time_t time(time_t *t);
 //获取当前时间结构，UTC时间，无时区转换
 //将timep这个秒数转换成以UTC时区为标准的年月日时分秒时间
 //gmtime_r除了返回结果外，还会把结果保存在传入的内存中
-struct tm *gmtime(const time_t *timep)；
-struct tm *gmtime_r(const time_t *timep, struct tm *result);
+struct tm *gmtime(const time_t *timep);
+struct tm *gmtime_r(const time_t *timep, struct tm *result);  
 //获取当前时间结构，本地时间，有时区转换
 struct tm *localtime(const time_t * timep);
 struct tm *localtime_r(const time_t *timep, struct tm *result);

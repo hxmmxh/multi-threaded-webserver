@@ -1,0 +1,2 @@
+muduo的Thread库实现了对pthread的封装，本简易版muduo直接采用C++中的thread头文件，实现了相同的功能
+用C++的头文件atmic代替了原子操作
