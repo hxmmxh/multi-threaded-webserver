@@ -2,7 +2,7 @@
 #define HXMMXH_LOGGING_H
 
 #include "LogStream.h"
-#include "Timestamp.h"
+#include "../Time/Timestamp.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -109,6 +109,7 @@ inline Logger::LogLevel Logger::logLevel()
 
 //下列宏先建立一个Logger对象，再返回其stream()成员函数，即一个LogStream对象
 //把日志记录在LogStream中
+//创建的是临时对象，Logger对象析构时将LogStream中的内容写入文件
 //__LINE__：在源代码中插入当前源代码行号；
 //__FILE__：在源文件中插入当前源文件名；
 //__func__指示当前函数名

@@ -2,6 +2,7 @@
 #include "Logging.h"
 
 #include <memory>
+#include <unistd.h>
 
 using namespace hxmmxh;
 std::unique_ptr<LogFile> g_logFile;

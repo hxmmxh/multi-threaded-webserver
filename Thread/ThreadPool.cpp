@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdio>
 #include <utility> //std::move
+#include <unistd.h> //usleep
 #include <stdexcept>
 #include <iostream>
 
@@ -43,9 +44,11 @@ void ThreadPool::start(int numThreads)
 
 void ThreadPool::stop()
 {
+    usleep(10);
     {
         std::lock_guard<std::mutex> lock(mutex_);
         running_ = false;
+        //take()会阻塞在notEmpty中，条件为任务队列为空且线程池正在运行
         notEmpty_.notify_all();
     }
     for (auto &thr : threads_)
@@ -60,6 +63,7 @@ size_t ThreadPool::queueSize() const
     return queue_.size();
 }
 
+//往任务队列中添加任务task，随后task在函数take中取出，在函数runInThread中被执行
 void ThreadPool::run(Task task)
 {
     //线程池为空，直接运行
@@ -87,6 +91,7 @@ void ThreadPool::run(Task task)
 ThreadPool::Task ThreadPool::take()
 {
     std::unique_lock<std::mutex> lock(mutex_);
+    //线程词不运行时，即使任务队列为空，也不要再等待
     while (queue_.empty() && running_)
         notEmpty_.wait(lock);
     Task task;
@@ -104,6 +109,8 @@ ThreadPool::Task ThreadPool::take()
 
 bool ThreadPool::isFull() const
 {
+    //只有在已取得锁的情况下才会调用isFull
+    //可以加个条件判度语句，判度此时mutex已被锁
     return maxQueueSize_ > 0 && queue_.size() >= maxQueueSize_;
 }
 
@@ -116,6 +123,7 @@ void ThreadPool::runInThread()
     while (running_)
     {
         Task task(take());
+        //线程停止时会取出空的task
         if (task)
         {
             task();

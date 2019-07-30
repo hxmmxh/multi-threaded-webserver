@@ -1,4 +1,5 @@
 #include "LogFile.h"
+#include "Logging.h"
 
 #include <cassert> //assert
 #include <time.h>

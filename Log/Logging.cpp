@@ -1,12 +1,13 @@
-#include "CurrentThread.h"
+#include "../Thread/CurrentThread.h"
 #include "Logging.h"
-#include "Timestamp.h"
+#include "../Time/Timestamp.h"
 //#include "TimeZone.h" 该头文件暂时未完成，先用系统的Struct timezone替代
 
 #include <cerrno>
 #include <cstring>  //strerror_r
 #include <stdlib.h> //getnv
 #include <sstream>
+#include <iostream>
 
 namespace hxmmxh
 {
@@ -81,6 +82,7 @@ nmemb-- 这是元素的个数，每个元素的大小为 size 字节。
 stream-- 这是指向 FILE 对象的指针，该 FILE 对象指定了一个输出流。
 如果成功，该函数返回一个 size_t 对象，表示元素的总数，该对象是一个整型数据类型。如果该数字与 nmemb 参数不同，则会显示一个错误
 */
+
 //把msg写入到stdout中
 void defaultOutput(const char *msg, int len)
 {
@@ -109,7 +111,7 @@ Logger::Impl::Impl(LogLevel level, int savedErrno, const SourceFile &file, int l
       stream_(),
       level_(level),
       line_(line),
-      basename_(NULL)
+      basename_(file)
 {
     formatTime();         //先记录时间
     CurrentThread::tid(); //取得该线程的tid
@@ -174,6 +176,7 @@ Logger::Logger(SourceFile file, int line, bool toAbort)
 {
 }
 
+//析构Loggger时，将stream里的内容通过g_output写入设置的文件中
 Logger::~Logger()
 {
     impl_.finish();
