@@ -37,8 +37,8 @@ Buffer.o: ../Buffer/Buffer.cpp ../Buffer/Buffer.h
 ThreadPool.o: ../Thread/ThreadPool.cpp ../Thread/ThreadPool.h
 	g++ -c ../Thread/ThreadPool.cpp
 clean: cleano cleanlog
-	rm LogStreamTest LogFileTest LoggingTest
+	rm LogStreamTest LogFileTest LoggingTest AsyncLoggingTest
 cleano:
-	rm *.o
+	-rm *.o
 cleanlog:
-	rm *.log
+	-rm *.log
