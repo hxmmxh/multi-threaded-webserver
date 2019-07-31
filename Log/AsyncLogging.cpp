@@ -1,6 +1,6 @@
 #include "AsyncLogging.h"
 #include "LogFile.h"
-#include "Timestamp.h"
+#include "../Time/Timestamp.h"
 
 #include <stdio.h>
 #include <utility>//move

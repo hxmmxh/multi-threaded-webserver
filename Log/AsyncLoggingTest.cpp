@@ -33,15 +33,15 @@ void bench(bool longLog)
         Timestamp start = Timestamp::now();
         for (int i = 0; i < kBatch; ++i)
         {
-            L LOG_INFO << "Hello 0123456789"
+            LOG_INFO << "Hello 0123456789"
                        << " abcdefghijklmnopqrstuvwxyz "
-                       << (longLog ? longStr : empty)
+                       << (longLog ? longstr : empty)
                        << cnt;
             ++cnt;
         }
-        imestamp end = Timestamp::now();
+        Timestamp end = Timestamp::now();
         printf("%f\n", timeDifference(end, start) * 1000000 / kBatch);
-        struct timespec ts = {0, 500 * 1000 * 1000};
+        struct timespec ts = {0, 500 * 1000 * 1000};//第二个参数是纳秒
         nanosleep(&ts, NULL);
     }
 }
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
     char name[256] = {0};
     strncpy(name, argv[0], sizeof name - 1);
-    AsyncLogging log(::basename(name), kRollSize);
+    AsyncLoggingDoubleBuffering log(::basename(name), kRollSize);
     log.start();
     g_asyncLog = &log;
 
