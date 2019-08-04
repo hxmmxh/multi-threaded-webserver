@@ -1,40 +1,21 @@
-.PHONY : obj cleano clean 
-
-vpath %.h ../
-vpath %.c ../
+.PHONY: clean 
 
 FILE= CurrentThread.o ThreadPool.o Thread.o 
+HERADER=$(wildcard ../*.h)
+SRCS=$(wildcard ../*.cpp)
+TEST=$(wildcard *.cpp)
+target=CurrentThreadTest ThreadPoolTest ThreadTest
 
-obj:CurrentThreadTest ThreadPoolTest ThreadTest
+all : $(target)
 
-CurrentThreadTest: $(FILE) CurrentThreadTest.o
-	g++ -o CurrentThreadTest CurrentThreadTest.o $(FILE) -lpthread
+$(target) : $(HEADER) $(SRCS)
 
-ThreadPoolTest: $(FILE) ThreadPoolTest.o
-	g++ -o ThreadPoolTest ThreadPoolTest.o $(FILE) -lpthread
+$(target) :  
+	g++ -o $@ $(filter %.cpp,$^) -lpthread
 
-ThreadTest : $(FILE) ThreadTest.obj
-	g++ -o ThreadTest ThreadTest.o $(FILE) -lpthread
+CurrentThreadTest: CurrentThreadTest.cpp
 
-CurrentThreadTest.o :CurrentThreadTest.cpp
-	g++ -c CurrentThreadTest.cpp
+ThreadPoolTest: ThreadPoolTest.cpp
 
-ThreadPoolTest.o : ThreadPoolTest.cpp
-	g++ -c ThreadPoolTest.cpp
+ThreadTest: ThreadTest.cpp
 
-ThreadTest.o : ThreadTest.cpp
-	g++ -c ThreadTest.cpp
-
-Thread.o : Thread.cpp Thread.h CurrentThread.h CountDownLatch.h
-	g++ -c Thread.cpp
-
-ThreadPool.o : ThreadPool.cpp ThreadPool.h
-	g++ -c ThreadPool.cpp
-
-CurrentThread.o : CurrentThread.cpp CurrentThread.h
-	g++ -c CurrentThread.cpp
-
-clean: cleano 
-	-rm CurrentThreadTest ThreadPoolTest ThreadTest
-cleano:
-	-rm *.o

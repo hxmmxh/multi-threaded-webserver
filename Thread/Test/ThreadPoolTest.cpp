@@ -1,5 +1,5 @@
-#include "ThreadPool.h"
-#include "CurrentThread.h"
+#include "../ThreadPool.h"
+#include "../CurrentThread.h"
 
 #include <iostream>
 #include <unistd.h>

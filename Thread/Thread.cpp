@@ -1,10 +1,13 @@
 #include "Thread.h"
-#include "Logging.h"
+//#include "../Log/Logging.h"
 #include "CurrentThread.h"
 
+#include <cassert>
 #include <stdio.h>     //snprintf
 #include <sys/prctl.h> //prctl
 #include <utility>     //move
+
+using std::string;
 
 namespace hxmmxh
 {
@@ -80,7 +83,7 @@ void *startThread(void *obj)
 } // namespace detail
 
 //初始化为0
-std::atomic_int32_t numCreated_;
+std::atomic_int32_t Thread::numCreated_;
 
 Thread::Thread(ThreadFunc func, const string &n)
     : started_(false),
@@ -126,7 +129,8 @@ void Thread::start()
   {
     started_ = false;
     delete data; 
-    LOG_SYSFATAL << "Failed in pthread_create";
+    //LOG_SYSFATAL << "Failed in pthread_create";
+    abort();
   }
   else
   {

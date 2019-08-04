@@ -8,7 +8,8 @@
 #include <memory>
 #include <pthread.h>
 #include <string>
-
+namespace hxmmxh
+{
 class Thread
 {
 public:
@@ -43,5 +44,5 @@ private:
 
     static std::atomic_int32_t numCreated_;
 };
-
+}
 #endif

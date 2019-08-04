@@ -1,5 +1,5 @@
-#include "CurrentThread.h"
-#include "Thread.h"
+#include "../CurrentThread.h"
+#include "../Thread.h"
 
 #include <iostream>
 #include <vector>

@@ -1,5 +1,5 @@
-#include "CurrentThread.h"
-#include "Thread.h"
+#include "../CurrentThread.h"
+#include "../Thread.h"
 
 #include <string>
 #include <stdio.h>
@@ -73,7 +73,7 @@ int main()
     t3.start();
     t3.join();
 
-    Thread t4(std::bind(&Foo::memberFunc2, std::ref(foo), std::string("Shuo Chen")));
+    Thread t4(std::bind(&Foo::memberFunc2, std::ref(foo), std::string("Xiemin Huang")));
     t4.start();
     t4.join();
 

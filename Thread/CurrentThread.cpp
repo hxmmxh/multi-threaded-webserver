@@ -1,4 +1,5 @@
 #include "CurrentThread.h"
+#include "../Time/Timestamp.h"
 
 #include <sys/syscall.h> //syscall
 #include <time.h>        //nanosleep,timespec
@@ -38,7 +39,7 @@ bool isMainThread()
   return tid() == ::getpid();
 }
 
-void CurrentThread::sleepUsec(int64_t usec)
+void sleepUsec(int64_t usec)
 {
   struct timespec ts = {0, 0};
   ts.tv_sec = static_cast<time_t>(usec / Timestamp::kMicroSecondsPerSecond);
