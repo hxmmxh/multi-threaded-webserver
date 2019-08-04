@@ -23,7 +23,6 @@ void test(int maxSize)
   std::cout << "Test ThreadPool with max queue size = " << maxSize << '\n';
   ThreadPool pool("MainThreadPool");
   pool.setMaxQueueSize(maxSize);
-  //pool.setThreadInitCallback(print);
   pool.start(5);
 
   std::cout << "Adding\n";
@@ -35,24 +34,14 @@ void test(int maxSize)
     snprintf(buf, sizeof(buf), "task %d", i);
     pool.run(std::bind(printString, std::string(buf)));
   }
+  std::cout << "Done\n";
 
   CountDownLatch latch(1);
-  //pool.run([] { cout << "run!\n"; });
   pool.run(std::bind(&CountDownLatch::countDown, &latch));
   latch.wait();
   pool.stop();
 }
-/* 
-void testMove()
-{
-  ThreadPool pool;
-  pool.start(2);
 
-  std::unique_ptr<int> x(new int(42));
-  pool.run([y = std::move(x)] { printf("%d: %d\n", CurrentThread::tid(), *y); });
-  pool.stop();
-}
-*/
 int main()
 {
   test(0);

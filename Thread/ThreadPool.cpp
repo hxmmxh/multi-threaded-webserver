@@ -2,10 +2,8 @@
 
 #include <cassert>
 #include <cstdio>
-#include <utility> //std::move
+#include <utility>  //std::move
 #include <unistd.h> //usleep
-#include <stdexcept>
-#include <iostream>
 
 using namespace hxmmxh;
 
@@ -34,7 +32,10 @@ void ThreadPool::start(int numThreads)
     threads_.reserve(numThreads);
     for (int i = 0; i < numThreads; ++i)
     {
-        threads_.emplace_back(new std::thread(std::bind(&ThreadPool::runInThread, this)));
+        char id[32];
+        snprintf(id, sizeof id, "%d", i + 1);
+        threads_.emplace_back(new Thread(std::bind(&ThreadPool::runInThread, this), name_ + id));
+        threads_[i]->start();
     }
     if (numThreads == 0 && threadInitCallback_)
     {

@@ -1,45 +1,17 @@
-#ifndef HXMMXH_THREADPOOL_H
-#define HXMMXH_THREADPOOL_H
+#ifndef HXMMXH_THREAD_THREADPOOL_H
+#define HXMMXH_THREAD_THREADPOOL_H
+
+#include "Thread.h"
 
 #include <condition_variable>
 #include <deque>
 #include <functional>
 #include <mutex>
 #include <string>
-#include <thread>
 #include <vector>
 
 namespace hxmmxh
 {
-class CountDownLatch
-{
-public:
-    explicit CountDownLatch(int count) : count_(count) {}
-    void wait()
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        while (count_ > 0)
-            cond_.wait(lock);
-    }
-
-    void countDown()
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        --count_;
-        if (count_ == 0)
-            cond_.notify_all();
-    }
-    int getCount()
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        return count_;
-    }
-
-private:
-    mutable std::mutex mutex_;
-    std::condition_variable cond_;
-    int count_;
-};
 
 class ThreadPool
 {
@@ -67,19 +39,19 @@ public:
     void run(Task f);
 
 private:
-    bool isFull() const;
     void runInThread();
     Task take();
-
-    mutable std::mutex mutex_;
-    std::condition_variable notEmpty_;
-    std::condition_variable notFull_;
     std::string name_;
     Task threadInitCallback_;
-    std::vector<std::unique_ptr<std::thread>> threads_; //保存的线程
-    std::deque<Task> queue_;                            //任务队列
+    std::vector<std::unique_ptr<Thread>> threads_; //保存的线程
     size_t maxQueueSize_;
     bool running_;
+
+    mutable std::mutex mutex_;
+    bool isFull() const;
+    std::condition_variable notEmpty_;
+    std::condition_variable notFull_;
+    std::deque<Task> queue_; //任务队列
 };
 
 } // namespace hxmmxh

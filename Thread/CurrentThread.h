@@ -1,5 +1,5 @@
-#ifndef HXMMXH_CURRENTTHREAD_H
-#define HXMMXH_CURRENTTHREAD_H
+#ifndef HXMMXH_THREAD_CURRENTTHREAD_H
+#define HXMMXH_THREAD_CURRENTTHREAD_H
 
 #include <string>
 
@@ -9,11 +9,14 @@ namespace CurrentThread
 {
 // 要在*.c文件中引用另一个文件中的一个全局的变量，那就应该放在*.h中用extern来声明这个全局变量。
 extern __thread int t_cachedTid;
+//用string保存线程ID
 extern __thread char t_tidString[32];
 extern __thread int t_tidStringLength;
 extern __thread const char *t_threadName;
+
 void cacheTid();//缓存该线程的tid，即修改t_cachedTid的值
 
+//返回线程ID
 inline int tid()
 {
     //允许程序员将最有可能执行的分支告诉编译器
@@ -27,12 +30,12 @@ inline int tid()
     return t_cachedTid;
 }
 
-inline const char *tidString() // for logging
+inline const char *tidString() 
 {
     return t_tidString;
 }
 
-inline int tidStringLength() // for logging
+inline int tidStringLength() 
 {
     return t_tidStringLength;
 }
@@ -44,6 +47,7 @@ inline const char *name()
 
 bool isMainThread();
 
+void sleepUsec(int64_t usec); 
 
 } // namespace CurrentThread
 } // namespace hxmmxh

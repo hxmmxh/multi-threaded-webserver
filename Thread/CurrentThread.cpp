@@ -1,18 +1,21 @@
 #include "CurrentThread.h"
 
-#include <unistd.h>      //syscall
-#include <sys/syscall.h> //SYS-gettid
+#include <sys/syscall.h> //syscall
+#include <time.h>        //nanosleep,timespec
+#include <unistd.h>      //getpid
 
 namespace hxmmxh
 {
-namespace CurrentThread
+namespace detail
 {
-
 pid_t gettid()
 {
-  //#define SYS_gettid __NR_gettid
   return static_cast<pid_t>(::syscall(SYS_gettid));
 }
+
+} // namespace detail
+namespace CurrentThread
+{
 
 __thread int t_cachedTid = 0;
 __thread char t_tidString[32];
@@ -24,7 +27,7 @@ void cacheTid()
 {
   if (t_cachedTid == 0)
   {
-    t_cachedTid = gettid();
+    t_cachedTid = detail::gettid();
     t_tidStringLength = snprintf(t_tidString, sizeof(t_tidString), "%5d ", t_cachedTid);
   }
 }
@@ -35,5 +38,12 @@ bool isMainThread()
   return tid() == ::getpid();
 }
 
+void CurrentThread::sleepUsec(int64_t usec)
+{
+  struct timespec ts = {0, 0};
+  ts.tv_sec = static_cast<time_t>(usec / Timestamp::kMicroSecondsPerSecond);
+  ts.tv_nsec = static_cast<long>(usec % Timestamp::kMicroSecondsPerSecond * 1000);
+  ::nanosleep(&ts, NULL);
+}
 } // namespace CurrentThread
 } // namespace hxmmxh
