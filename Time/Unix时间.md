@@ -43,6 +43,12 @@ struct timeval
   long tv_sec;  //秒
   long tv_usec; //微秒
 };
+//精确到纳秒
+struct timespec
+{
+  time_t  tv_sec;         /* 秒seconds */
+  long    tv_nsec;        /* 纳秒nanoseconds */
+};
 //时区
 struct timezone
 {
@@ -53,7 +59,7 @@ struct timezone
 
 ### 常用函数
 
-```cpp
+```c
 #include<time.h>
 //返回UTC标准秒数，没有时区转换,即1970年01月01日00时00分00秒起至现在的总秒数
 time_t time(time_t *t);
@@ -76,4 +82,39 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 char *ctime(const time_t *timep);
 //将时间转换为字符串， 无时区转换
 char * asctime(const struct tm * timeptr)
+```
+* 获取系统当前时间
+```cpp
+int clock_gettime(clockid_t clk_id, struct timespec *tp);
+//返回0成功， 1失败。得到的时间信息存储再tp中
+//clk_id的可能取值如下
+CLOCK_REALTIME:                 系统实时时间,随系统实时时间改变而改变,即从UTC1970-1-1 0:0:0开始计时,如果系统时间被用户改成其他,则对应的时间相应改变
+CLOCK_REALTIME_COARSE：          和CLOCK_REALTIME类似，但是执行速度快，精度低
+CLOCK_MONOTONIC:                 从系统启动这一刻起开始计时,不受系统时间被用户改变的影响
+CLOCK_MONOTONIC_COARSE ：        和CLOCK_MONOTONIC类似，但是执行速度快，精度低
+CLOCK_BOOTTIME：                和CLOCK_MONOTONIC 类似，但是包括了系统休眠的时间。
+CLOCK_PROCESS_CPUTIME_ID:       本进程到当前代码系统CPU花费的时间
+CLOCK_THREAD_CPUTIME_ID:        本线程到当前代码系统CPU花费的时间
+```
+## sleep相关函数
+* [参考](https://www.jianshu.com/p/42abcc2c9e50)
+* 秒的换算：ms(毫秒),μs(微秒),ns(纳秒),ps(皮秒)  
+* 1s = 1000ms = 1000 * 1000us = 1000 * 1000 * 1000ns = 1000 * 1000 * 1000* 1000ps
+* 函数的精确度与时钟的频率有关系：例如假设时钟中断是10纳秒一次，如果tv_sec = 0, tv_nsec = 2,那么时钟中断一定是在10纳秒后来唤醒这个进程的
+```cpp
+//sleep()-------以秒为单位
+#include<unistd.h>
+unsigned int sleep(unsigned int seconds);
+//若进程暂停到参数seconds 所指定的时间，成功则返回0，若有信号中断则返回剩余秒数。
+//在linux中，sleep是通过nanosleep实现的。在一些其他系统中（例如POSIX.1），它是通过alarm()来实现的。
+
+//usleep()----以微秒为单位
+#include<unistd.h>
+unsigned int usleep(unsigned int useconds);
+//若进程暂停到参数seconds 所指定的时间，成功则返回0，若有信号中断则返回剩余微秒数。
+
+//nanosleep( )---------以纳秒为单位
+#include<time.h>
+int nanosleep(const struct timespec *req, struct timespec *rem);
+//若进程暂停到参数*req所指定的时间，成功则返回0，若有信号中断则返回-1，并且将剩余微秒数记录在*rem中。
 ```
