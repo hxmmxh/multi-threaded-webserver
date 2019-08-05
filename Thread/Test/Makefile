@@ -19,3 +19,6 @@ ThreadPoolTest: ThreadPoolTest.cpp
 
 ThreadTest: ThreadTest.cpp
 
+clean:
+	-rm $(target)
+

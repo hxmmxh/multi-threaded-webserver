@@ -3,7 +3,7 @@
 
 #include "../../Time/Timestamp.h"
 #include "../Callbacks.h"
-#include "../Channel.h" //TimeQueue类中有Channel对象
+#include "../Reactor/Channel.h" //TimeQueue类中有Channel对象
 
 #include <atomic>
 #include <cinttypes>

@@ -41,8 +41,8 @@ private:
     EventLoop *baseLoop_;
     std::string name_;
     bool started_;
-    int numThreads_;
-    int next_;
+    int numThreads_; //线程池的大小
+    int next_;       //下一个被取出的loop序号
     std::vector<std::unique_ptr<EventLoopThread>> threads_;
     std::vector<EventLoop *> loops_;
 };

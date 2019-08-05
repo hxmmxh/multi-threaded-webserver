@@ -1,10 +1,10 @@
 #ifndef HXMMXH_EVENTLOOP_H
 #define HXMMXH_EVENTLOOP_H
 
-#include "../Time/Timestamp.h"
-#include "Callbacks.h"
-#include "../Thread/CurrentThread.h"
-#include "Timer/TimerQueue.h"
+#include "../../Time/Timestamp.h"
+#include "../Callbacks.h"
+#include "../../Thread/CurrentThread.h"
+#include "../Timer/TimerQueue.h"
 
 #include <atomic>
 #include <functional>
@@ -43,10 +43,10 @@ public:
     }
     bool isInLoopThread() const
     {
-        return threadId_ == gettid();
+        return threadId_ == CurrentThread::tid();
     }
 
-    EventLoop *getEventLoopOfCurrentThread();
+    static EventLoop *getEventLoopOfCurrentThread();
 
     void updateChannel(Channel *channel);
 

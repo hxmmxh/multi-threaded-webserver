@@ -1,10 +1,12 @@
 #ifndef HXMMXH_EVENTLOOPTHREAD_H
 #define HXMMXH_EVENTLOOPTHREAD_H
 
-#include <mutex>
+#include "../../Thread/Thread.h"
+
 #include <condition_variable>
-#include <thread>
 #include <functional>
+#include <mutex>
+#include <string>
 
 namespace hxmmxh
 {
@@ -15,7 +17,7 @@ class EventLoopThread
 public:
     typedef std::function<void(EventLoop *)> ThreadInitCallback;
 
-    EventLoopThread(const ThreadInitCallback &cb = ThreadInitCallback());
+    EventLoopThread(const ThreadInitCallback &cb = ThreadInitCallback(), const std::string &name = string());
     ~EventLoopThread();
     EventLoop *startLoop();
 
@@ -24,7 +26,7 @@ private:
 
     ThreadInitCallback callback_;
     bool exiting_;
-    std::thread thread_;
+    Thread thread_;
 
     std::mutex mutex_;
     EventLoop *loop_;
