@@ -1,15 +1,22 @@
+CPPFLAGS= -pthread
 
 HEADERS=$(wildcard *.h)
 SRCS=$(wildcard *.cpp)
 OBJS=$(SRCS:.cpp=.o)
 LIB=Thread.a
 
-all: $(LIB)
+TESTSRCS=$(wildcard Test/*.cpp)
+TEST=$(TESTSRCS:.cpp=)
+
+all: $(TEST)
+lib: $(LIB)
 
 $(OBJS):$(HEADERS)
 
 $(LIB) : $(OBJS)
 	ar rcs $@ $^
 
+$(TEST):$(LIB)
+
 clean:
-	rm $(OBJS)
+	rm $(OBJS) $(TEST) $(LIB)
