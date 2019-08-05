@@ -1,4 +1,4 @@
-#include "LogStream.h"
+#include "../LogStream.h"
 
 #include <iostream>
 #include <limits>

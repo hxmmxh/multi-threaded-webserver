@@ -1,7 +1,6 @@
-#include "LogFile.h"
-#include "Logging.h"
-#include "../Buffer/Buffer.h"
-#include "../Thread/ThreadPool.h"
+#include "../LogFile.h"
+#include "../Logging.h"
+#include "../../Thread/ThreadPool.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -74,7 +73,6 @@ int main()
     LOG_INFO << sizeof(Logger);
     LOG_INFO << sizeof(LogStream);
     LOG_INFO << sizeof(Fmt);
-    LOG_INFO << sizeof(Buffer);
 
     sleep(1);
     bench("nop");
