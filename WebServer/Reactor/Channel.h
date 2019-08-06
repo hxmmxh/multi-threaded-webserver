@@ -1,7 +1,7 @@
 #ifndef HXMMXH_CHANNEL_H
 #define HXMMXH_CHANNEL_H
 
-#include "../Time/Timestamp.h"
+#include "../../Time/Timestamp.h"
 
 #include <functional>
 #include <memory>

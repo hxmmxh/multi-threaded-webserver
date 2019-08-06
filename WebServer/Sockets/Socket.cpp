@@ -106,7 +106,7 @@ void Socket::setReusePort(bool on)
 #endif
 }
 
-//UNP P157
+//UNP P157 保持存活探测分节
 void Socket::setKeepAlive(bool on)
 {
   int optval = on ? 1 : 0;

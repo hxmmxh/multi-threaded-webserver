@@ -7,7 +7,7 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 
-//修改下内置timerfd函数，使其更适用我们额定时器
+//修改下内置timerfd函数，使其更适用我们的定时器
 namespace hxmmxh
 {
 
@@ -29,6 +29,7 @@ struct timespec
     long tv_nsec;    //纳秒
 }; 
  */
+//计算when到Now之间的相对时间
 struct timespec howMuchTimeFromNow(Timestamp when)
 {
     int64_t microseconds = when.microSecondsSinceEpoch() - Timestamp::now().microSecondsSinceEpoch();
@@ -63,6 +64,7 @@ struct itimerspec
     struct timespec it_value;      //第一次到期时间
 };
  */
+//到expiration这一时刻到期
 void resetTimerfd(int timerfd, Timestamp expiration)
 {
     struct itimerspec newValue;
@@ -71,7 +73,7 @@ void resetTimerfd(int timerfd, Timestamp expiration)
     memset(&oldValue, 0, sizeof(oldValue));
     newValue.it_value = howMuchTimeFromNow(expiration);
     //第二个参数为0代表相对时间
-    ////成功返回0, 失败返回-1以及设置errno
+    //成功返回0, 失败返回-1以及设置errno
     int ret = ::timerfd_settime(timerfd, 0, &newValue, &oldValue);
     if (ret)
     {
@@ -108,6 +110,7 @@ TimerQueue::TimerQueue(EventLoop *loop)
       callingExpiredTimers_(false)
 {
     //在Channel中注册timerfd可读回调函数，并开始监控可读事件
+    //timerfd_可读则说明有定时器到期
     timerfdChannel_.setReadCallback(
         std::bind(&TimerQueue::handleRead, this));
     timerfdChannel_.enableReading();
@@ -132,7 +135,7 @@ TimerId TimerQueue::addTimer(TimerCallback cb,
                              double interval)
 {
     Timer *timer = new Timer(std::move(cb), when, interval);
-    //注册任务，何时怎么运行由EventLoop决定
+    //注册任务，何时运行由EventLoop决定
     loop_->runInLoop(
         std::bind(&TimerQueue::addTimerInLoop, this, timer));
     return TimerId(timer, timer->sequence());
@@ -176,7 +179,7 @@ void TimerQueue::cancelInLoop(TimerId timerId)
         //在activeTimers_中也同样删除它
         activeTimers_.erase(it);
     }
-    //自注销，即在定时器回调中注销当前定时器
+    //自注销，即在定时器的可读回调函数中注销当前定时器
     else if (callingExpiredTimers_)
     {
         //cancelingTimers_中的定时器在随后的reset函数中不会被添加回timers_
@@ -185,6 +188,7 @@ void TimerQueue::cancelInLoop(TimerId timerId)
     assert(timers_.size() == activeTimers_.size());
 }
 
+//可读事件的回调函数
 void TimerQueue::handleRead()
 {
     loop_->assertInLoopThread();
@@ -206,6 +210,7 @@ void TimerQueue::handleRead()
     reset(expired, now);
 }
 
+//从timers_和activetimers_中移除已到期的Timer,并通过vector返回
 std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
 {
     assert(timers_.size() == activeTimers_.size());
@@ -234,6 +239,8 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
     return expired;
 }
 
+//expired中的定时器有些可能是重复的，找出并重新加入timers_和activetimers_中
+//并重新设置timerfd
 void TimerQueue::reset(const std::vector<Entry> &expired, Timestamp now)
 {
     Timestamp nextExpire;
@@ -244,7 +251,7 @@ void TimerQueue::reset(const std::vector<Entry> &expired, Timestamp now)
         if (it.second->repeat()                                        //该定时器是重复的
             && cancelingTimers_.find(timer) == cancelingTimers_.end()) //且没有在定时回调函数中注销自己
         {
-            //重新加入序列
+            //如果是可重复的，且不在重新加入序列
             it.second->restart(now);
             insert(it.second);
         }
@@ -274,6 +281,7 @@ bool TimerQueue::insert(Timer *timer)
     bool earliestChanged = false;
     Timestamp when = timer->expiration();
     TimerList::iterator it = timers_.begin();
+    //如果队列为空或者到期时间是最早的
     if (it == timers_.end() || when < it->first)
     {
         earliestChanged = true;

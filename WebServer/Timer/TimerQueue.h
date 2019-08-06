@@ -32,8 +32,9 @@ public:
     static int64_t numCreated() { return s_numCreated_; }
 
 private:
+    //typedef std::function<void()> TimerCallback;
     const TimerCallback callback_; //定时器到期时调用的函数
-    Timestamp expiration_;         //第一次到期时间，单位为微秒
+    Timestamp expiration_;         //第一次到期时间，单位为微秒，是绝对时间
     const double interval_;        //间隔时间，单位为秒
     const bool repeat_;            //是否重复，单位为秒
     const int64_t sequence_;       //序列号
@@ -52,11 +53,12 @@ public:
 
 private:
     Timer *timer_;
-    int64_t sequence; //timer_对象的序列号
+    int64_t sequence_; //timer_对象的序列号
 };
 
 class EventLoop; //后面用到EventLoop指针，只需提前声明就好了
 
+//定时器队列
 class TimerQueue
 {
 public:
@@ -83,8 +85,10 @@ private:
 
     //定时器到期，即timerfd可读时应调用的函数
     void handleRead();
-    //从timer_中移除已到期的Timer,并通过vector返回
+    //从timers_和activetimers_中移除已到期的Timer,并通过vector返回
     std::vector<Entry> getExpired(Timestamp now);
+    //expired中的定时器有些可能是重复的，找出并重新加入timers_和activetimers_中
+    //并重新设置timerfd
     void reset(std::vector<Entry> &expired, Timestamp now);
 
     bool insert(Timer *timer);

@@ -103,7 +103,7 @@ public:
     {
         retrieve(sizeof(int8_t));
     }
-    //把buffer_全取完
+    //把buffer_全清空，这里没有取出数据的操作
     void retrieveAll()
     {
         readerIndex_ = kCheapPrepend;

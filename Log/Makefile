@@ -19,5 +19,13 @@ $(LIB) : $(OBJS)
 
 $(TEST):$(LIB) ../Time/Time.a ../Thread/Thread.a
 
+
+../Time/Time.a:
+	cd ../Time;make
+
+../Thread/Thread.a:
+	cd ../Thread;make
+
+
 clean:
 	rm $(OBJS) $(TEST) $(LIB) $(LOGFILE)
