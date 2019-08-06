@@ -18,7 +18,7 @@ $(OBJS):$(HEADERS) $(OTHERH)
 $(LIB) : $(OBJS)
 	ar rcs $@ $^
 
-$(TEST):$(LIB)
+$(TEST):$(LIB) ../../Thread/Thread.a ../Timer/Timer.a  ../../Log/Log.a ../Sockets/Sockets.a
 
 clean:
 	rm $(OBJS) $(TEST) $(LIB)

@@ -28,5 +28,17 @@ $(TEST):$(LIB) ../Reactor/Reactor.a ../../Time/Time.a ../../Log/Log.a
 
 ../../Log/Log.a:
 	cd ../../Log;make
-clean:
+
+clean: cleanR cleanT cleanL
 	rm $(OBJS) $(TEST) $(LIB)
+
+cleanR:
+	cd ../Reactor;make clean
+
+cleanT:
+	cd ../../Time;make clean
+
+cleanL:
+	cd ../../Log;make clean
+
+

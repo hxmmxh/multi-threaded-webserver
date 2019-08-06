@@ -1,7 +1,6 @@
-#ifndef INETADDRESS_H
-#define INETADDRESS_H
+#ifndef HXMMXH_INETADDRESS_H
+#define HXMMXH_INETADDRESS_H
 
-#include
 
 #include <endian.h>
 #include <netinet/in.h>
@@ -52,7 +51,7 @@ inline uint16_t networkToHost16(uint16_t net16)
 const struct sockaddr *sockaddr_cast(const struct sockaddr_in6 *addr);
 } // namespace sockets
 
-class InetAddress : public copyable
+class InetAddress 
 {
 public:
     explicit InetAddress(uint16_t port = 0, bool loopbackOnly = false, bool ipv6 = false);
