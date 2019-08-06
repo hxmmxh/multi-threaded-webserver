@@ -65,7 +65,7 @@ public:
     TimerQueue(EventLoop *);
     ~TimerQueue();
     //添加定时器
-    TimerId addTimer(const TimerCallback &cb, Timestamp when, double interval);
+    TimerId addTimer(TimerCallback cb, Timestamp when, double interval);
     //注销定时器
     void cancel(TimerId timerId);
 
@@ -89,7 +89,7 @@ private:
     std::vector<Entry> getExpired(Timestamp now);
     //expired中的定时器有些可能是重复的，找出并重新加入timers_和activetimers_中
     //并重新设置timerfd
-    void reset(std::vector<Entry> &expired, Timestamp now);
+    void reset(const std::vector<Entry> &expired, Timestamp now);
 
     bool insert(Timer *timer);
 

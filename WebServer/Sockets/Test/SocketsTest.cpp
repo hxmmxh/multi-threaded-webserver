@@ -47,22 +47,20 @@ void testInetAddress()
     CHECKEQUAL(addr3.toPort(), 65535);
 }
 
-void testInetAddressResolve()
+void testInetAddressResolve(string msg)
 {
     InetAddress addr(80);
-    if (InetAddress::resolve("google.com", &addr))
+    if (InetAddress::resolve(msg, &addr))
     {
-        std::cout<< "google.com resolved to " << addr.toIpPort();
-    }
-    else
-    {
-        std::cout << "Unable to resolve google.com\n";
+        std::cout<< msg <<" resolved to " << addr.toIpPort()<<'\n';
     }
 }
 
 int main()
 {
     testInetAddress();
-    testInetAddressResolve();
+    testInetAddressResolve("google.com");
+    testInetAddressResolve("baidu.cn");
+    testInetAddressResolve("ustc.edu.cn");
     std::cout << test_pass << "/" << test_count << " passed\n";
 }

@@ -18,7 +18,7 @@ void printTid()
   printf("now %s\n", Timestamp::now().toString().c_str());
 }
 
-void print(const char* msg)
+void print(const char *msg)
 {
   printf("msg %s %s\n", Timestamp::now().toString().c_str(), msg);
   if (++cnt == 20)
@@ -59,9 +59,16 @@ int main()
   sleep(1);
   {
     EventLoopThread loopThread;
-    EventLoop* loop = loopThread.startLoop();
+    EventLoop *loop = loopThread.startLoop();
     loop->runAfter(2, printTid);
     sleep(3);
     print("thread loop exits");
+  }
+  sleep(3);
+  {
+    EventLoop loop;
+    loop.runAfter(5, std::bind(&EventLoop::quit, &loop));
+    loop.loop();
+    print("loop exits after 5s");
   }
 }

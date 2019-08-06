@@ -10,10 +10,10 @@
 #include <sys/uio.h>  // readv
 #include <unistd.h>
 
-using namespace hxmmxh::sockets;
+using namespace hxmmxh;
 
 //创建IPV4或IPV6的TCP套接字
-int createNonblockingOrDie(sa_family_t family)
+int sockets::createNonblockingOrDie(sa_family_t family)
 {
     int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     if (sockfd < 0)
@@ -24,12 +24,12 @@ int createNonblockingOrDie(sa_family_t family)
 }
 
 //成功返回0<,出错返回-1
-int connect(int sockfd, const struct sockaddr *addr)
+int sockets::connect(int sockfd, const struct sockaddr *addr)
 {
     return ::connect(sockfd, addr, static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
 }
 
-void bindOrDie(int sockfd, const struct sockaddr *addr)
+void sockets::bindOrDie(int sockfd, const struct sockaddr *addr)
 {
     int ret = ::bind(sockfd, addr, static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
     if (ret < 0)
@@ -38,7 +38,7 @@ void bindOrDie(int sockfd, const struct sockaddr *addr)
     }
 }
 
-void listenOrDie(int sockfd)
+void sockets::listenOrDie(int sockfd)
 {
     int ret = ::listen(sockfd, SOMAXCONN);
     if (ret < 0)
@@ -47,7 +47,7 @@ void listenOrDie(int sockfd)
     }
 }
 
-int accept(int sockfd, struct sockaddr_in6 *addr)
+int sockets::accept(int sockfd, struct sockaddr_in6 *addr)
 {
     socklen_t addrlen = static_cast<socklen_t>(sizeof *addr);
     //和accept的不同之处是可以在新开的文件描述符中设置SOCK_NONBLOCK | SOCK_CLOEXEC
@@ -87,23 +87,23 @@ int accept(int sockfd, struct sockaddr_in6 *addr)
     return connfd;
 }
 
-ssize_t read(int sockfd, void *buf, size_t count)
+ssize_t sockets::read(int sockfd, void *buf, size_t count)
 {
     return ::read(sockfd, buf, count);
 }
 //在一次函数调用中读、写多个非连续缓冲区
 //详细见Buffer设计与应用
-ssize_t readv(int sockfd, const struct iovec *iov, int iovcnt)
+ssize_t sockets::readv(int sockfd, const struct iovec *iov, int iovcnt)
 {
     return ::readv(sockfd, iov, iovcnt);
 }
 
-ssize_t :write(int sockfd, const void *buf, size_t count)
+ssize_t sockets::write(int sockfd, const void *buf, size_t count)
 {
     return ::write(sockfd, buf, count);
 }
 
-void close(int sockfd)
+void sockets::close(int sockfd)
 {
     if (::close(sockfd) < 0)
     {
@@ -111,7 +111,7 @@ void close(int sockfd)
     }
 }
 
-void shutdownWrite(int sockfd)
+void sockets::shutdownWrite(int sockfd)
 {
     if (::shutdown(sockfd, SHUT_WR) < 0)
     {
@@ -120,28 +120,34 @@ void shutdownWrite(int sockfd)
 }
 
 //套接字地址结构转换函数
-const struct sockaddr *sockaddr_cast(const struct sockaddr_in6 *addr)
+const struct sockaddr *sockets::sockaddr_cast(const struct sockaddr_in6 *addr)
 {
-    return static_cast<const struct sockaddr *>(addr);
+    return (const struct sockaddr *)(addr);
 }
 
-const struct sockaddr *sockaddr_cast(const struct sockaddr_in *addr)
+//第54行中用到非const版本
+struct sockaddr *sockets::sockaddr_cast(struct sockaddr_in6 *addr)
 {
-    return static_cast<const struct sockaddr *>(addr);
+    return (struct sockaddr *)(addr);
 }
 
-const struct sockaddr_in *sockaddr_in_cast(const struct sockaddr *addr)
+const struct sockaddr *sockets::sockaddr_cast(const struct sockaddr_in *addr)
 {
-    return static_cast<const struct sockaddr_in *>(addr);
+    return (const struct sockaddr *)(addr);
 }
 
-const struct sockaddr_in6 *sockaddr_in6_cast(const struct sockaddr *addr)
+const struct sockaddr_in *sockets::sockaddr_in_cast(const struct sockaddr *addr)
 {
-    return static_cast<const struct sockaddr_in6 *>(addr);
+    return (const struct sockaddr_in *)(addr);
+}
+
+const struct sockaddr_in6 *sockets::sockaddr_in6_cast(const struct sockaddr *addr)
+{
+    return (const struct sockaddr_in6 *)(addr);
 }
 
 //取出addr中保存的Ip地址和端口号，储存在buf中
-void toIpPort(char* buf, size_t size,
+void sockets::toIpPort(char* buf, size_t size,
                        const struct sockaddr* addr)
 {
   toIp(buf,size, addr);
@@ -156,7 +162,7 @@ void toIpPort(char* buf, size_t size,
 
 
 //取出addr中保存的Ip地址，储存在buf中
-void toIp(char* buf, size_t size,
+void sockets::toIp(char* buf, size_t size,
                    const struct sockaddr* addr)
 {
     //IPV4
@@ -177,7 +183,7 @@ void toIp(char* buf, size_t size,
 }
 
 //把addr中的地址设置为ip,port，IPV4
-void fromIpPort(const char* ip, uint16_t port,
+void sockets::fromIpPort(const char* ip, uint16_t port,
                          struct sockaddr_in* addr)
 {
   addr->sin_family = AF_INET;
@@ -189,7 +195,7 @@ void fromIpPort(const char* ip, uint16_t port,
   }
 }
 //IPv6
-void fromIpPort(const char* ip, uint16_t port,
+void sockets::fromIpPort(const char* ip, uint16_t port,
                          struct sockaddr_in6* addr)
 {
   addr->sin6_family = AF_INET6;
@@ -202,7 +208,7 @@ void fromIpPort(const char* ip, uint16_t port,
 
 //之所以返回 sockaddr_in6,而不是sockaddr_in
 //在使用返回的地址时可以先检查sin_family，如果是AF_INET,可以用reinterpret_cast转换成sockaddr_in
-struct sockaddr_in6 getLocalAddr(int sockfd)
+struct sockaddr_in6 sockets::getLocalAddr(int sockfd)
 {
   struct sockaddr_in6 localaddr;
   memset(&localaddr,0, sizeof (localaddr));
@@ -214,10 +220,10 @@ struct sockaddr_in6 getLocalAddr(int sockfd)
   return localaddr;
 }
 
-struct sockaddr_in6 getPeerAddr(int sockfd)
+struct sockaddr_in6 sockets::getPeerAddr(int sockfd)
 {
   struct sockaddr_in6 peeraddr;
-  memset(&peeraddr,0， sizeof(peeraddr));
+  memset(&peeraddr,0,sizeof(peeraddr));
   socklen_t addrlen = static_cast<socklen_t>(sizeof peeraddr);
   if (::getpeername(sockfd, sockaddr_cast(&peeraddr), &addrlen) < 0)
   {
@@ -226,7 +232,7 @@ struct sockaddr_in6 getPeerAddr(int sockfd)
   return peeraddr;
 }
 
-bool isSelfConnect(int sockfd)
+bool sockets::isSelfConnect(int sockfd)
 {
   struct sockaddr_in6 localaddr = getLocalAddr(sockfd);
   struct sockaddr_in6 peeraddr = getPeerAddr(sockfd);

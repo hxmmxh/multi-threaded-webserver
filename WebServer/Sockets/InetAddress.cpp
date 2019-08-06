@@ -15,7 +15,7 @@ const in_addr_t kInaddrAny = INADDR_ANY;
 const in_addr_t kInaddrLoopback = INADDR_LOOPBACK;
 } // namespace
 
-namespace hxmmxh;
+using namespace hxmmxh;
 
 //     /* Structure describing an Internet socket address.  */
 //     struct sockaddr_in {

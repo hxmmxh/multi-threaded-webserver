@@ -27,9 +27,9 @@ const char *strerror_tl(int savedErrno)
 //返回一个以 null 结尾的字符串，该字符串为被请求环境变量的值。如果该环境变量不存在，则返回 NULL。
 Logger::LogLevel initLogLevel()
 {
-    if (getenv("MUDUO_LOG_TRACE"))
+    if (getenv("LOG_TRACE"))
         return Logger::TRACE;
-    else if (getenv("MUDUO_LOG_DEBUG"))
+    else if (getenv("LOG_DEBUG"))
         return Logger::DEBUG;
     else
         return Logger::INFO;

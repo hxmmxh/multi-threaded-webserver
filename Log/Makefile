@@ -17,10 +17,10 @@ lib: $(LIB)
 
 $(OBJS):$(HEADERS) 
 
-$(LIB) : $(OBJS) 
-	ar rcs $@ $^
+$(LIB) : $(OBJS) ../Time/Time.a ../Thread/Thread.a
+	ar -x ../Time/Time.a;ar -x ../Thread/Thread.a;ar rcs $@ *.o
 
-$(TEST):$(LIB) ../Time/Time.a ../Thread/Thread.a
+$(TEST):$(LIB) 
 
 
 ../Time/Time.a:
@@ -31,7 +31,7 @@ $(TEST):$(LIB) ../Time/Time.a ../Thread/Thread.a
 
 
 clean: cleanTime cleanThread
-	rm $(OBJS) $(TEST) $(LIB) $(LOGFILE)
+	-rm *.o  $(TEST) $(LIB) $(LOGFILE)
 
 cleanTime:
 	cd ../Time;make clean

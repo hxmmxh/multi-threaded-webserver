@@ -1,7 +1,5 @@
 CPPFLAGS= -pthread
 
-include ../Reactor/Makefile ../../Time/Makefile
-
 HEADERS=$(wildcard *.h)
 SRCS=$(wildcard *.cpp)
 OBJS=$(SRCS:.cpp=.o)
@@ -29,11 +27,8 @@ $(TEST):$(LIB) ../Reactor/Reactor.a ../../Time/Time.a ../../Log/Log.a
 ../../Log/Log.a:
 	cd ../../Log;make
 
-clean: cleanR cleanT cleanL
-	rm $(OBJS) $(TEST) $(LIB)
-
-cleanR:
-	cd ../Reactor;make clean
+clean: cleanT cleanL
+	-rm $(OBJS) $(TEST) $(LIB)
 
 cleanT:
 	cd ../../Time;make clean

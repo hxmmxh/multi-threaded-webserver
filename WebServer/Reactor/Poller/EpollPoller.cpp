@@ -1,5 +1,5 @@
 #include "EpollPoller.h"
-#include "../../Log/Logging.h"
+#include "../../../Log/Logging.h"
 #include "../Channel.h"
 
 #include <cassert>
@@ -89,7 +89,7 @@ struct epoll_event {
     epoll_data_t data; //User data variable 
 };
 */
-``` void EPollPoller::fillActiveChannels(int numEvents,
+void EPollPoller::fillActiveChannels(int numEvents,
                                          ChannelList *activeChannels) const
 {
     assert(static_cast<size_t>(numEvents) <= events_.size());

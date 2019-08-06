@@ -1,7 +1,7 @@
 #include "TimerQueue.h"
 
 #include "../../Log/Logging.h"
-#include "../EventLoop.h" //TimerQueue.h中有Eventloop的提前声明，不包含头文件
+#include "../Reactor/EventLoop.h" //TimerQueue.h中有Eventloop的提前声明，不包含头文件
 
 #include <cstring>
 #include <sys/timerfd.h>
@@ -86,7 +86,7 @@ void resetTimerfd(int timerfd, Timestamp expiration)
 using namespace hxmmxh;
 
 //Timer类的静态对象，初始化为0
-std::atmoic<int64_t> Timer::s_numCreated_;
+std::atomic<int64_t> Timer::s_numCreated_;
 
 void Timer::restart(Timestamp now)
 {

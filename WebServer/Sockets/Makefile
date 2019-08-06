@@ -24,7 +24,7 @@ $(TEST):$(LIB) ../../Log/Log.a
 
 
 clean: cleanLog
-	rm $(OBJS) $(TEST) $(LIB) 
+	-rm $(OBJS) $(TEST) $(LIB) 
 
 cleanLog:
 	cd ../../Log;make clean

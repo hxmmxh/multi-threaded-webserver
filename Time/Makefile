@@ -19,4 +19,4 @@ $(LIB) : $(OBJS)
 $(TEST):$(LIB)
 
 clean:
-	rm $(OBJS) $(TEST) $(LIB)
+	-rm $(OBJS) $(TEST) $(LIB)

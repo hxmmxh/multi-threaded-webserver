@@ -2,11 +2,15 @@
 #include "../EventLoopThread.h"
 #include "../../../Thread/Thread.h"
 #include "../../../Thread/CountDownLatch.h"
+#include "../../../Log/Logging.h"
 
 #include <stdio.h>
 #include <unistd.h>
+#include <cstdlib>
+#include <iostream>
 
 using namespace hxmmxh;
+using namespace std;
 
 void print(EventLoop *p = NULL)
 {
@@ -22,8 +26,7 @@ void quit(EventLoop *p)
 
 int main()
 {
-    print();
-
+    //Logger::setLogLevel(Logger::TRACE);
     {
         EventLoopThread thr1; // never start
     }

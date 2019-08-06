@@ -1,9 +1,11 @@
 #ifndef HXMMXH_INETADDRESS_H
 #define HXMMXH_INETADDRESS_H
 
+#include "../../Log/StringPiece.h"
 
 #include <endian.h>
 #include <netinet/in.h>
+#include <string>
 
 namespace hxmmxh
 {
@@ -46,10 +48,7 @@ inline uint16_t networkToHost16(uint16_t net16)
 }
 
 #pragma GCC diagnostic pop
-
-//提前声明，在SocketsOps.cpp中定义
-const struct sockaddr *sockaddr_cast(const struct sockaddr_in6 *addr);
-} // namespace sockets
+}
 
 class InetAddress 
 {
@@ -60,13 +59,13 @@ public:
     explicit InetAddress(const struct sockaddr_in6 &addr) : addr6_(addr) {}
 
     sa_family_t family() const { return addr_.sin_family; }
-    string toIp() const;
-    string toIpPort() const;
+    std::string toIp() const;
+    std::string toIpPort() const;
     uint16_t toPort() const;
     uint32_t ipNetEndian() const;
     uint16_t portNetEndian() const { return addr_.sin_port; }
 
-    const struct sockaddr *getSockAddr() const { return sockaddr_cast(&addr6_); }
+    const struct sockaddr *getSockAddr() const { return static_cast<const struct sockaddr *>((void*)&addr6_); }
     void setSockAddrInet6(const struct sockaddr_in6 &addr6) { addr6_ = addr6; }
 
     static bool resolve(StringArg hostname, InetAddress *result);
@@ -80,4 +79,5 @@ private:
     };
 };
 } // namespace hxmmxh
+
 #endif

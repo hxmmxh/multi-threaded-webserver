@@ -29,7 +29,6 @@ public:
     EventLoop();
     ~EventLoop();
 
-    Timestamp pollReturnTime() const { return pollReturnTime_; }
 
     void loop();
     void quit();
@@ -48,7 +47,6 @@ public:
 
     static EventLoop *getEventLoopOfCurrentThread();
 
-    void updateChannel(Channel *channel);
 
     TimerId runAt(const Timestamp &time, const TimerCallback &cb);
     TimerId runAfter(double delay, const TimerCallback &cb);
@@ -80,7 +78,7 @@ private:
     std::atomic_bool looping_;
     std::atomic_bool quit_;
     std::atomic_bool eventHandling_;         //是否正在处理活跃事件，loop()中修改
-    std::atomic_bool callingPendingFunctor_; //是否在处理任务队列
+    std::atomic_bool callingPendingFunctors_; //是否在处理任务队列
     int64_t iteration_;
     const pid_t threadId_;
     Timestamp pollReturnTime_; //loop()中poll函数返回的时间

@@ -1,13 +1,15 @@
 #include "EventLoop.h"
-#include "../Log/Logging.h"
+#include "../../Log/Logging.h"
 #include "Poller.h"
 #include "../Timer/TimerQueue.h"
 #include "Channel.h"
 #include "../Sockets/SocketsOps.h"
 
 #include <algorithm>
+#include <signal.h>
 #include <sys/eventfd.h>
 #include <cstdlib>
+#include <unistd.h>
 
 using namespace hxmmxh;
 
@@ -40,14 +42,15 @@ int createEventfd()
 //pragma GCC diagnostic [error|warning|ignored] "-W<警告选项>"
 //关闭"-old-style-cast"警告
 //-old-style-cast ，程序使用C风格的类型转换时给出警告
-#pragma GCC diagnostic ignoed "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 class IgnoreSigPipe
 {
 public:
     IgnoreSigPipe()
     {
         ::signal(SIGPIPE, SIG_IGN);
-        LOG_TRACE << "Ignore SIGPIPE";
+        //会有BUG,不管日志是多少，都会输出这条信息
+        //LOG_TRACE<< "Ignore SIGPIPE";
     }
 };
 //开启警告，升级为错误
@@ -171,7 +174,7 @@ void EventLoop::queueInLoop(const Functor &cb)
         std::lock_guard<std::mutex> lock(mutex_);
         pendingFunctors_.push_back(cb);
     }
-    if (!isInLoopThread() || callingPendingFunctor_)
+    if (!isInLoopThread() || callingPendingFunctors_)
     {
         wakeup();
     }
@@ -269,13 +272,13 @@ void EventLoop::printActiveChannels() const
 void EventLoop::doPendingFunctors()
 {
     std::vector<Functor> functors;
-    callingPendingFunctor_ = true;
+    callingPendingFunctors_ = true;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         functors.swap(pendingFunctors_);
     }
     for (size_t i = 0; i < functors.size(); ++i)
         functors[i]();
-    callingPendingFunctor_ = false;
+    callingPendingFunctors_ = false;
 }
 

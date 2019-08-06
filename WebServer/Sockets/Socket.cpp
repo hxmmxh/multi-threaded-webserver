@@ -103,7 +103,6 @@ void Socket::setReusePort(bool on)
   {
     LOG_SYSERR << "SO_REUSEPORT failed.";
   }
-#endif
 }
 
 //UNP P157 保持存活探测分节

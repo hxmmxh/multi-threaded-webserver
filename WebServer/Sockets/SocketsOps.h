@@ -37,6 +37,7 @@ int getSocketError(int sockfd);
 const struct sockaddr *sockaddr_cast(const struct sockaddr_in *addr);
 //IPV6套接字地址结构转通用套接字地址结构
 const struct sockaddr *sockaddr_cast(const struct sockaddr_in6 *addr);
+struct sockaddr *sockaddr_cast(struct sockaddr_in6 *addr);
 //通用套接字地址结构转IPV4套接字地址结构
 const struct sockaddr_in *sockaddr_in_cast(const struct sockaddr *addr);
 //通用套接字地址结构转IPV6套接字地址结构

@@ -21,22 +21,22 @@ public:
     Channel(EventLoop *loop, int fd);
     ~Channel();
 
-    void handleEvent();
-    void setReadCallback(const EventCallback &cb)
+    void handleEvent(Timestamp receivetime);
+    void setReadCallback(ReadEventCallback cb)
     {
-        readCallback_ = cb;
+        readCallback_ = std::move(cb);
     }
-    void setWriteCallback(const EventCallback &cb)
+    void setWriteCallback(EventCallback cb)
     {
-        writeCallback_ = cb;
+        writeCallback_ = std::move(cb);
     }
-    void setErrorCallback(const EventCallback &cb)
+    void setErrorCallback(EventCallback cb)
     {
-        errorCallback_ = cb;
+        errorCallback_ = std::move(cb);
     }
-    void setCloseCallback(const EventCallback &cb)
+    void setCloseCallback( EventCallback cb)
     {
-        closeCallback_ = cb;
+        closeCallback_ = std::move(cb);
     }
 
     /// Tie this channel to the owner object managed by shared_ptr,

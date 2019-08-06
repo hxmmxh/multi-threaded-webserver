@@ -8,17 +8,33 @@ LIB=Reactor.a
 TESTSRCS=$(wildcard Test/*.cpp)
 TEST=$(TESTSRCS:.cpp=)
 
-OTHERH= ../../Thread/Thread.h ../../Thread/CurrentThread.h ../Timer/TimerQueue.h ../Callbacks.h ../Log/Logging.h \
-		../Sockets/SocketsOps.h
 all: $(TEST)
 lib: $(LIB)
 
-$(OBJS):$(HEADERS) $(OTHERH)
+$(OBJS):$(HEADERS)
 
-$(LIB) : $(OBJS)
-	ar rcs $@ $^
+$(LIB) : $(OBJS) ../Timer/Timer.a ../../Log/Log.a ../Sockets/Sockets.a
+	ar -x ../Timer/Timer.a;ar -x ../../Log/Log.a;ar -x ../Sockets/Sockets.a;ar rcs $@ *.o
 
-$(TEST):$(LIB) ../../Thread/Thread.a ../Timer/Timer.a  ../../Log/Log.a ../Sockets/Sockets.a
+$(TEST):$(LIB)  
 
-clean:
-	rm $(OBJS) $(TEST) $(LIB)
+../Timer/Timer.a:
+	cd ../Timer;make
+
+../../Log/Log.a:
+	cd ../../Log;make
+
+../Sockets/Sockets.a:
+	cd ../Sockets;make
+
+clean: cleanT cleanL cleanS
+	-rm *.o  $(TEST) $(LIB)
+
+cleanT:
+	cd ../Timer;make clean
+
+cleanL:
+	cd ../../Log;make clean
+
+cleanS:
+	cd ../Sockets;make clean
