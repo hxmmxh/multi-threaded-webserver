@@ -3,7 +3,6 @@ CPPFLAGS= -pthread
 HEADERS=$(wildcard *.h)
 SRCS=$(wildcard *.cpp)
 OBJS=$(SRCS:.cpp=.o)
-OTHER=../Time/Time.a ../Thread/Thread.a
 
 LIB=Log.a
 
@@ -12,20 +11,16 @@ TEST=$(TESTSRCS:.cpp=)
 
 LOGFILE=$(wildcard Test/*.log)
 
-supp:$(OTHER)
-	ar -x $<
-
 
 all: $(TEST)
 lib: $(LIB)
-obj: $(OBJS) supp
 
 $(OBJS):$(HEADERS) 
 
-$(LIB) : obj
-	ar rcs $@ *.o
+$(LIB) : $(OBJS) 
+	ar rcs $@ $^
 
-$(TEST):$(LIB) 
+$(TEST):$(LIB) ../Time/Time.a ../Thread/Thread.a
 
 
 ../Time/Time.a:
