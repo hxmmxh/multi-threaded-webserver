@@ -27,5 +27,11 @@ $(TEST):$(LIB) ../Time/Time.a ../Thread/Thread.a
 	cd ../Thread;make
 
 
-clean:
+clean: cleanTime cleanThread
 	rm $(OBJS) $(TEST) $(LIB) $(LOGFILE)
+
+cleanTime:
+	cd ../Time;make clean
+
+cleanThread:
+	cd ../Thread;make clean
