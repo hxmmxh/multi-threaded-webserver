@@ -49,7 +49,10 @@ public:
     IgnoreSigPipe()
     {
         ::signal(SIGPIPE, SIG_IGN);
-        //会有BUG,不管日志是多少，都会输出这条信息
+        //会有BUG,不管日志级别是多少，都会输出这条信息
+        //推测和不同编译单位的全局对象的初始化次序有关
+        //如果IgnoreSigPipe对象先于g_logLevel = initLogLevel()之前调用，就会产生这种现象
+        //详见md说明文件
         //LOG_TRACE<< "Ignore SIGPIPE";
     }
 };
