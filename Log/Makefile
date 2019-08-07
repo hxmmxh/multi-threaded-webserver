@@ -18,7 +18,9 @@ lib: $(LIB)
 $(OBJS):$(HEADERS) 
 
 $(LIB) : $(OBJS) ../Time/Time.a ../Thread/Thread.a
-	ar -x ../Time/Time.a;ar -x ../Thread/Thread.a;ar rcs $@ *.o
+	ar -x ../Time/Time.a;\
+	ar -x ../Thread/Thread.a;\
+	ar rcs $@ *.o
 
 $(TEST):$(LIB) 
 

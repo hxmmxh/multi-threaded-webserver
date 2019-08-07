@@ -14,7 +14,10 @@ lib: $(LIB)
 $(OBJS):$(HEADERS)
 
 $(LIB) : $(OBJS) ../Timer/Timer.a ../../Log/Log.a ../Sockets/Sockets.a
-	ar -x ../Timer/Timer.a;ar -x ../../Log/Log.a;ar -x ../Sockets/Sockets.a;ar rcs $@ *.o
+	ar -x ../Timer/Timer.a;\
+	ar -x ../../Log/Log.a;\
+	ar -x ../Sockets/Sockets.a;\
+	ar rcs $@ *.o
 
 $(TEST):$(LIB)  
 

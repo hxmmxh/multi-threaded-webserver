@@ -127,3 +127,20 @@
 #define EMEDIUMTYPE 124 /* Wrong medium type */
 #endif
 ```
+```
+Linux下常见的socket错误码：
+EACCES, EPERM：用户试图在套接字广播标志没有设置的情况下连接广播地址或由于防火墙策略导致连接失败。
+EADDRINUSE 98：Address already in use（本地地址处于使用状态）
+EAFNOSUPPORT 97：Address family not supported by protocol（参数serv_add中的地址非合法地址）
+EAGAIN：没有足够空闲的本地端口。
+EALREADY 114：Operation already in progress（套接字为非阻塞套接字，并且原来的连接请求还未完成）
+EBADF 77：File descriptor in bad state（非法的文件描述符）
+ECONNREFUSED 111：Connection refused（远程地址并没有处于监听状态）
+EFAULT：指向套接字结构体的地址非法。
+EINPROGRESS 115：Operation now in progress（套接字为非阻塞套接字，且连接请求没有立即完成）
+EINTR：系统调用的执行由于捕获中断而中止。
+EISCONN 106：Transport endpoint is already connected（已经连接到该套接字）
+ENETUNREACH 101：Network is unreachable（网络不可到达）
+ENOTSOCK 88：Socket operation on non-socket（文件描述符不与套接字相关）
+ETIMEDOUT 110：Connection timed out（连接超时）
+```

@@ -7,6 +7,7 @@
 
 #include <cerrno>
 #include <fcntl.h>
+#include <unistd.h>
 
 using namespace hxmmxh;
 
@@ -38,8 +39,9 @@ void Acceptor::listen()
 {
     loop_->assertInLoopThread();
     listenning_ = true;
+    //套接字开始listen
     acceptSocket_.listen();
-    //对应的Channel开始检测可读事件
+    //对应的Channel开始监听可读事件
     acceptChannel_.enableReading();
 }
 
@@ -48,7 +50,7 @@ void Acceptor::handleRead()
 {
     loop_->assertInLoopThread();
     InetAddress peerAddr;
-    //返回已连接套接字描述符
+    //返回已连接套接字描述符,peerAddr中保存对端地址
     int connfd = acceptSocket_.accept(&peerAddr);
     if (connfd >= 0)
     {
