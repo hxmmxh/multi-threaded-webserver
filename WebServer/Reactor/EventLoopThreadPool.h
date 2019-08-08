@@ -16,15 +16,12 @@ class EventLoopThreadPool
 public:
     typedef std::function<void(EventLoop *)> ThreadInitCallback;
 
-    EventLoopThreadPool(EventLoop *baseLoop, const std::string &nameArg);
+    EventLoopThreadPool(EventLoop *baseLoop, const std::string &nameArg="Default EventLoopThreadPool");
     ~EventLoopThreadPool();
     void setThreadNum(int numThreads) { numThreads_ = numThreads; }
     void start(const ThreadInitCallback &cb = ThreadInitCallback());
 
     EventLoop *getNextLoop();
-
-    EventLoop *getLoopForHash(size_t hashCode);
-
     std::vector<EventLoop *> getAllLoops();
 
     bool started() const
