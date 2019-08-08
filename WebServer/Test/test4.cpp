@@ -2,6 +2,7 @@
 #include "../Reactor/EventLoop.h"
 #include "../Sockets/InetAddress.h"
 #include <stdio.h>
+#include <unistd.h>
 
 std::string message1;
 std::string message2;
@@ -15,7 +16,7 @@ void onConnection(const TcpConnectionPtr &conn)
         printf("onConnection(): tid=%d new connection [%s] from %s\n",
                CurrentThread::tid(),
                conn->name().c_str(),
-               conn->peerAddress().toHostPort().c_str());
+               conn->peerAddress().toIpPort().c_str());
         if (!message1.empty())
             conn->send(message1);
         if (!message2.empty())
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
     InetAddress listenAddr(9981);
     EventLoop loop;
 
-    TcpServer server(&loop, listenAddr);
+    TcpServer server(&loop, listenAddr,"test4",TcpServer::kReusePort);
     server.setConnectionCallback(onConnection);
     server.setMessageCallback(onMessage);
     if (argc > 3)

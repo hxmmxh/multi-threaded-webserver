@@ -2,14 +2,17 @@
 #define HXMMXH_TCPCONNECTION_H
 
 #include "Callbacks.h"
-#include "Buffer/Buffer.h"
+#include "Buffer.h"
 #include "Sockets/InetAddress.h"
+#include "Sockets/Socket.h"
 #include "../Log/StringPiece.h"
 
 #include <string>
 #include <memory>
-
 struct tcp_info; //定义在<netinet/tcp.h>
+namespace hxmmxh
+{
+
 class Channel;
 class EventLoop;
 class Socket;
@@ -135,5 +138,5 @@ private:
     Buffer inputBuffer_;  //输入缓冲区
     Buffer outputBuffer_; //输出缓冲区
 };
-
+} // namespace hxmmxh
 #endif

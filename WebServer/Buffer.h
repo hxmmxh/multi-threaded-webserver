@@ -18,6 +18,8 @@
 /// |                   |                  |                  |
 /// 0      <=      readerIndex   <=   writerIndex    <=     size
 /// @endcode
+namespace hxmmxh
+{
 class Buffer
 {
 public:
@@ -325,5 +327,5 @@ private:
     size_t readerIndex_;
     size_t writerIndex_;
 };
-
+} // namespace hxmmxh
 #endif

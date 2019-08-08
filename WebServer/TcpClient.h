@@ -6,6 +6,7 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <utility>
 
 namespace hxmmxh
@@ -15,9 +16,10 @@ typedef std::shared_ptr<Connector> ConnectorPtr;
 
 class TcpClient
 {
+  public:
   TcpClient(EventLoop *loop,
             const InetAddress &serverAddr,
-            const string &nameArg);
+            const std::string &nameArg);
   ~TcpClient();
 
   void connect();    //开始建立连接
@@ -34,7 +36,7 @@ class TcpClient
   bool retry() const { return retry_; }
   void enableRetry() { retry_ = true; }
 
-  const string &name() const
+  const std::string &name() const
   {
     return name_;
   }
@@ -60,7 +62,7 @@ private:
 
   EventLoop *loop_;
   ConnectorPtr connector_;
-  const string name_;
+  const std::string name_;
 
   ConnectionCallback connectionCallback_;
   MessageCallback messageCallback_;
@@ -72,5 +74,7 @@ private:
 
   mutable std::mutex mutex_;
   TcpConnectionPtr connection_;
-}
+};
 } // namespace hxmmxh
+
+#endif

@@ -15,7 +15,7 @@ using namespace hxmmxh;
 
 TcpServer::TcpServer(EventLoop *loop,
                      const InetAddress &listenAddr,
-                     const string &nameArg,
+                     const std::string &nameArg,
                      Option option)
     : loop_(loop),
       ipPort_(listenAddr.toIpPort()),
@@ -27,6 +27,7 @@ TcpServer::TcpServer(EventLoop *loop,
       messageCallback_(defaultMessageCallback),
       nextConnId_(1)
 {
+  std::atomic_init(&started_,0);
   //接收到新连接的回调函数
   acceptor_->setNewConnectionCallback(
       std::bind(&TcpServer::newConnection, this, _1, _2));

@@ -1,6 +1,8 @@
 #include "../Channel.h"
 #include "../EventLoop.h"
 
+#include <cstring>
+#include <unistd.h>
 #include <stdio.h>
 #include <sys/timerfd.h>
 
@@ -27,7 +29,7 @@ int main()
 
     //5秒后到时
     struct itimerspec howlong;
-    bzero(&howlong, sizeof howlong);
+    memset(&howlong, 0,sizeof howlong);
     howlong.it_value.tv_sec = 5;
     ::timerfd_settime(timerfd, 0, &howlong, NULL);
 

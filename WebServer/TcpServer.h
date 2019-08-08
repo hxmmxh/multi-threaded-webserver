@@ -6,6 +6,7 @@
 #include <atomic>
 #include <functional>
 #include <map>
+#include <string>
 
 namespace hxmmxh
 {
@@ -26,12 +27,12 @@ public:
 
     TcpServer(EventLoop *loop,
               const InetAddress &listenAddr,
-              const string &nameArg,
+              const std::string &nameArg,
               Option option = kNoReusePort);
     ~TcpServer();
 
-    const string &ipPort() const { return ipPort_; }
-    const string &name() const { return name_; }
+    const std::string &ipPort() const { return ipPort_; }
+    const std::string &name() const { return name_; }
     EventLoop *getLoop() const { return loop_; }
 
     void setThreadNum(int numThreads);

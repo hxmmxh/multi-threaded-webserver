@@ -4,6 +4,8 @@
 #include <memory.h>
 #include <sys/uio.h> //iovec，readv
 
+using namespace hxmmxh;
+
 ssize_t Buffer::readFd(int fd, int* savedErrno)
 {
   char extrabuf[65536];

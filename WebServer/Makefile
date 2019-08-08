@@ -23,7 +23,7 @@ Reactor/Reactor.a:
 	cd Reactor;make
 
 
-clean: cleanT\ cleanR
+clean:  cleanR
 	-rm *.o  $(TEST) $(LIB)
 
 cleanR:

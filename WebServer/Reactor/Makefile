@@ -1,7 +1,7 @@
 CPPFLAGS= -pthread
 
-HEADERS=$(wildcard *.h) $(wildcard Poller/*h)
-SRCS=$(wildcard *.cpp) $(wildcard Poller/*cpp)
+HEADERS=$(wildcard *.h) 
+SRCS=$(wildcard *.cpp) 
 OBJS=$(SRCS:.cpp=.o)
 LIB=Reactor.a
 

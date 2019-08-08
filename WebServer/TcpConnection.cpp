@@ -11,7 +11,7 @@
 
 using namespace hxmmxh;
 
-void defaultConnectionCallback(const TcpConnectionPtr &conn)
+void hxmmxh::defaultConnectionCallback(const TcpConnectionPtr &conn)
 {
     LOG_TRACE << conn->localAddress().toIpPort() << " -> "
               << conn->peerAddress().toIpPort() << " is "
@@ -19,7 +19,7 @@ void defaultConnectionCallback(const TcpConnectionPtr &conn)
 }
 
 //默认的信息处理函数：丢弃数据
-void defaultMessageCallback(const TcpConnectionPtr &,
+void hxmmxh::defaultMessageCallback(const TcpConnectionPtr &,
                             Buffer *buf,
                             Timestamp)
 {

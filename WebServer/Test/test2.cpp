@@ -2,6 +2,7 @@
 #include "../Reactor/EventLoop.h"
 #include "../Sockets/InetAddress.h"
 #include <stdio.h>
+#include <unistd.h>
 
 using namespace hxmmxh;
 
@@ -12,7 +13,7 @@ void onConnection(const TcpConnectionPtr &conn)
         printf("onConnection(): tid=%d new connection [%s] from %s\n",
                CurrentThread::tid(),
                conn->name().c_str(),
-               conn->peerAddress().toHostPort().c_str());
+               conn->peerAddress().toIpPort().c_str());
     }
     else
     {
@@ -32,17 +33,17 @@ void onMessage(const TcpConnectionPtr &conn,
            conn->name().c_str(),
            receiveTime.toFormattedString().c_str());
 
-    printf("onMessage(): [%s]\n", buf->retrieveAsString().c_str());
+    printf("onMessage(): [%s]\n", buf->retrieveAllAsString().c_str());
 }
 
 int main(int argc, char *argv[])
 {
     printf("main(): pid = %d\n", getpid());
 
-    InetAddress listenAddr(9981);
+    InetAddress listenAddr(9983);
     EventLoop loop;
 
-    TcpServer server(&loop, listenAddr);
+    TcpServer server(&loop, listenAddr,"test2");
     server.setConnectionCallback(onConnection);
     server.setMessageCallback(onMessage);
     if (argc > 1)

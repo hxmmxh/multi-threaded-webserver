@@ -253,3 +253,17 @@ bool sockets::isSelfConnect(int sockfd)
     return false;
   }
 }
+
+int sockets::getSocketError(int sockfd)
+{
+  int optval;
+  socklen_t optlen = static_cast<socklen_t>(sizeof(optval));
+  if (::getsockopt(sockfd,SOL_SOCKET,SO_ERROR,&optval,&optlen)<0)
+  {
+    return errno;
+  }
+  else
+  {
+    return optval;
+  }
+}

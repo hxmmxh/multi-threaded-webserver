@@ -19,7 +19,7 @@ void onConnection(const TcpConnectionPtr &conn)
     {
         printf("onConnection(): new connection [%s] from %s\n",
                conn->name().c_str(),
-               conn->peerAddress().toHostPort().c_str());
+               conn->peerAddress().toIpPort().c_str());
         conn->send(message);
     }
     else
@@ -38,14 +38,14 @@ void onMessage(const TcpConnectionPtr &conn,
            conn->name().c_str(),
            receiveTime.toFormattedString().c_str());
 
-    printf("onMessage(): [%s]\n", buf->retrieveAsString().c_str());
+    printf("onMessage(): [%s]\n", buf->retrieveAllAsString().c_str());
 }
 
 int main()
 {
     EventLoop loop;
     InetAddress serverAddr("localhost", 9981);
-    TcpClient client(&loop, serverAddr);
+    TcpClient client(&loop, serverAddr,"test7");
 
     client.setConnectionCallback(onConnection);
     client.setMessageCallback(onMessage);

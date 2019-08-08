@@ -4,6 +4,7 @@
 #include <type_traits> //is_same
 
 using namespace std;
+using namespace hxmmxh;
 static int test_count = 0;
 static int test_pass = 0;
 

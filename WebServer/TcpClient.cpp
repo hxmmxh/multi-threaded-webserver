@@ -29,7 +29,7 @@ void removeConnector(const ConnectorPtr &connector)
 
 TcpClient::TcpClient(EventLoop *loop,
                      const InetAddress &serverAddr,
-                     const string &nameArg)
+                     const std::string &nameArg)
     : loop_(loop),
       connector_(new Connector(loop, serverAddr)),
       name_(nameArg),
@@ -49,11 +49,11 @@ TcpClient::TcpClient(EventLoop *loop,
 TcpClient::~TcpClient()
 {
     LOG_INFO << "TcpClient::~TcpClient[" << name_
-             << "] - connector " << get_pointer(connector_);
+             << "] - connector " << connector_.get();
     TcpConnectionPtr conn;
     bool unique = false;
     {
-        MutexLockGuard lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         //指针为空时，返回的也是false
         //只有指针管理着一个对象，且该对象只被该指针管理时才返回true
         unique = connection_.unique();
@@ -95,7 +95,7 @@ void TcpClient::disconnect()
 {
     connect_ = false;
     {
-        MutexLockGuard lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         if (connection_)
         {
             connection_->shutdown();
@@ -135,28 +135,28 @@ void TcpClient::newConnection(int sockfd)
     conn->setCloseCallback(
         std::bind(&TcpClient::removeConnection, this, _1));
     {
-        MutexLockGuard lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         connection_ = conn;
     }
     conn->connectEstablished();
 }
 
-void TcpClient::removeConnection(const TcpConnectionPtr& conn)
+void TcpClient::removeConnection(const TcpConnectionPtr &conn)
 {
-  loop_->assertInLoopThread();
-  assert(loop_ == conn->getLoop());
+    loop_->assertInLoopThread();
+    assert(loop_ == conn->getLoop());
 
-  {
-    MutexLockGuard lock(mutex_);
-    assert(connection_ == conn);
-    connection_.reset();
-  }
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        assert(connection_ == conn);
+        connection_.reset();
+    }
 
-  loop_->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));
-  if (retry_ && connect_)
-  {
-    LOG_INFO << "TcpClient::connect[" << name_ << "] - Reconnecting to "
-             << connector_->serverAddress().toIpPort();
-    connector_->restart();
-  }
+    loop_->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));
+    if (retry_ && connect_)
+    {
+        LOG_INFO << "TcpClient::connect[" << name_ << "] - Reconnecting to "
+                 << connector_->serverAddress().toIpPort();
+        connector_->restart();
+    }
 }

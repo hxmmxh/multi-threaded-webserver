@@ -1,6 +1,7 @@
 #include "../EventLoop.h"
 #include "../../../Thread/Thread.h"
 #include <stdio.h>
+#include <unistd.h>
 
 using namespace hxmmxh;
 
