@@ -25,9 +25,9 @@ TcpServer::TcpServer(EventLoop *loop,
       //下面两个默认函数的定义在TcpConnection.cpp
       connectionCallback_(defaultConnectionCallback),
       messageCallback_(defaultMessageCallback),
-      nextConnId_(1)
+      nextConnId_(1),
+      started_(0)
 {
-  std::atomic_init(&started_,0);
   //接收到新连接的回调函数
   acceptor_->setNewConnectionCallback(
       std::bind(&TcpServer::newConnection, this, _1, _2));

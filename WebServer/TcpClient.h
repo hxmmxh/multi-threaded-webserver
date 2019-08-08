@@ -69,7 +69,7 @@ private:
   WriteCompleteCallback writeCompleteCallback_;
 
   std::atomic_bool retry_;
-  std::atomic_bool connect_; //是否在建立连接
+  std::atomic_bool connect_; 
   int nextConnId_;
 
   mutable std::mutex mutex_;
