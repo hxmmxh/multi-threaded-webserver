@@ -57,6 +57,7 @@ void TcpServer::start()
 {
   if (started_.exchange(1) == 0)
   {
+    //线程池这时开始启动，要在start前指定线程池的大小
     threadPool_->start(threadInitCallback_);
     //acceptor还没有开始监控套接字
     assert(!acceptor_->listenning());
