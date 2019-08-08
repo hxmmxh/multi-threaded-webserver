@@ -44,7 +44,8 @@ public:
         return threadPool_;
     }
 
-    void start();
+    void start(); //开始监听套接字
+    //都要传递给TcpConnection类使用
     void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
     void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
     void setWriteCompleteCallback(const WriteCompleteCallback &cb) { writeCompleteCallback_ = cb; }
@@ -54,20 +55,22 @@ private:
     void removeConnection(const TcpConnectionPtr &conn);
     void removeConnectionInLoop(const TcpConnectionPtr &conn);
 
+    //第一个参数存储着连接的名字
     typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
 
     EventLoop *loop_;
     const std::string ipPort_; //监听套接字的地址端口号
     const std::string name_;   //指定的名字
     std::unique_ptr<Acceptor> acceptor_;
-    ConnectionCallback connectionCallback_;
     std::shared_ptr<EventLoopThreadPool> threadPool_;
-    ConnectionCallback connectionCallback_;
+
+    ConnectionCallback connectionCallback_; //TcpConnection建立和移除时调用的函数
     MessageCallback messageCallback_;
     WriteCompleteCallback writeCompleteCallback_;
-    ThreadInitCallback threadInitCallback_;
-    std::atomic_int32_t started_;
-    int nextConnId_; //接收到额连接的序号
+    ThreadInitCallback threadInitCallback_; //线程池每个线程创建时调用的函数
+
+    std::atomic_int32_t started_; //是否开始监听
+    int nextConnId_;              //接收到的套接字连接的序号
     ConnectionMap connections_;
 };
 } // namespace hxmmxh

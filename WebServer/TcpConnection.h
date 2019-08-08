@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-struct tcp_info;
+struct tcp_info; //定义在<netinet/tcp.h>
 class Channel;
 class EventLoop;
 class Socket;
@@ -33,20 +33,22 @@ public:
 
     bool getTcpInfo(struct tcp_info *) const;
     std::string getTcpInfoString() const;
+    void setTcpNoDelay(bool on);
 
+    //发送数据相关函数
     void send(const void *message, int len);
     void send(const StringPiece &message);
     void send(Buffer *message);
 
-    void shutdown();
-
+    //关闭连接相关函数
+    void shutdown();                          //关闭写端，还可以接收数据
     void forceClose();                        //主动关闭
     void forceCloseWithDelay(double seconds); //延迟后主动关闭
-    void setTcpNoDelay(bool on);
 
-    void startRead();
-    void stopRead();
-    bool isReading() const { return reading_; };
+    //接收数据相关函数
+    void startRead();                            //开始接收数据
+    void stopRead();                             //停止接收数据
+    bool isReading() const { return reading_; }; //是否在接收数据
 
     void setConnectionCallback(const ConnectionCallback &cb)
     {
@@ -68,6 +70,7 @@ public:
         highWaterMarkCallback_ = cb;
         highWaterMark_ = highWaterMark;
     }
+
     void setCloseCallback(const CloseCallback &cb)
     {
         closeCallback_ = cb;
@@ -82,7 +85,10 @@ public:
     {
         return &outputBuffer_;
     }
+
+    //用于Tcpserver，接收到一个新连接时调用
     void connectEstablished();
+    //用于Tcpserver，移除一个连接时调用
     void connectDestroyed();
 
 private:
@@ -94,6 +100,8 @@ private:
         kDisconnecting
     };
     void setState(StateE s) { state_ = s; }
+    const char *stateToString() const;
+
     void handleRead(Timestamp receiveTime);
     void handleWrite();
     void handleClose();
@@ -101,32 +109,31 @@ private:
 
     void sendInLoop(const StringPiece &message);
     void sendInLoop(const void *message, size_t len);
-
     void shutdownInLoop();
-    // void shutdownAndForceCloseInLoop(double seconds);
     void forceCloseInLoop();
-    void setState(StateE s) { state_ = s; }
-    const char *stateToString() const;
+
     void startReadInLoop();
     void stopReadInLoop();
 
     EventLoop *loop_;
     std::string name_;
     StateE state_;
-    bool reading_;
+    bool reading_; //是否在接收数据
 
-    std::unique_ptr<Socket> socket_;
-    std::unique_ptr<Channel> channel_;
-    const InetAddress localAddr_;
-    const InetAddress peerAddr_;
+    std::unique_ptr<Socket> socket_;   //拥有的已连接套接字
+    std::unique_ptr<Channel> channel_; //监听该套接字的Channel
+    const InetAddress localAddr_;      //本地地址
+    const InetAddress peerAddr_;       //对端地址
+
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
     WriteCompleteCallback writeCompleteCallback_;
     HighWaterMarkCallback highWaterMarkCallback_;
     CloseCallback closeCallback_;
+
     size_t highWaterMark_;
-    Buffer inputBuffer_;
-    Buffer outputBuffer_;
+    Buffer inputBuffer_;  //输入缓冲区
+    Buffer outputBuffer_; //输出缓冲区
 };
 
 #endif

@@ -34,7 +34,7 @@ public:
     {
         errorCallback_ = std::move(cb);
     }
-    void setCloseCallback( EventCallback cb)
+    void setCloseCallback(EventCallback cb)
     {
         closeCallback_ = std::move(cb);
     }
@@ -74,6 +74,7 @@ public:
         events_ = kNoneEvent;
         update();
     }
+    //是否在监听可写或可读信号
     bool isWriting() const { return events_ & kWriteEvent; }
     bool isReading() const { return events_ & kReadEvent; }
 
@@ -103,7 +104,7 @@ private:
     int events_;  //表示关心的IO事件
     int revents_; //目前活动的事件
     int index_;   //在Poller中的序号
-    bool logHup_;//是否记录POLLHUP事件
+    bool logHup_; //是否记录POLLHUP事件
 
     std::weak_ptr<void> tie_;
     bool tied_;

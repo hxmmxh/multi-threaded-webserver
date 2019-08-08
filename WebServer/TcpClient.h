@@ -20,9 +20,9 @@ class TcpClient
             const string &nameArg);
   ~TcpClient();
 
-  void connect();    //开始连接
+  void connect();    //开始建立连接
   void disconnect(); //断开连接(已经连接成功后)
-  void stop();       //停止连接
+  void stop();       //停止建立连接
 
   TcpConnectionPtr connection() const
   {
@@ -61,12 +61,15 @@ private:
   EventLoop *loop_;
   ConnectorPtr connector_;
   const string name_;
+
   ConnectionCallback connectionCallback_;
   MessageCallback messageCallback_;
   WriteCompleteCallback writeCompleteCallback_;
+
   std::atomic_bool retry_;
-  std::atomic_bool connect_;
+  std::atomic_bool connect_; //是否在建立连接
   int nextConnId_;
+
   mutable std::mutex mutex_;
   TcpConnectionPtr connection_;
 }

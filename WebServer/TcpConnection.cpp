@@ -1,9 +1,10 @@
 #include "TcpConnection.h"
+
 #include "../Log/Logging.h"
-#include "Channel.h"
-#include "EventLoop.h"
-#include "Socket.h"
-#include "SocketsOps.h"
+#include "Reactor/Channel.h"
+#include "Reactor/EventLoop.h"
+#include "Sockets/Socket.h"
+#include "Sockets/SocketsOps.h"
 
 #include <functional>
 #include <errno.h>
@@ -17,6 +18,7 @@ void defaultConnectionCallback(const TcpConnectionPtr &conn)
               << (conn->connected() ? "UP" : "DOWN");
 }
 
+//默认的信息处理函数：丢弃数据
 void defaultMessageCallback(const TcpConnectionPtr &,
                             Buffer *buf,
                             Timestamp)
@@ -63,11 +65,13 @@ TcpConnection::~TcpConnection()
     assert(state_ == kDisconnected);
 }
 
+//获取Tcp连接信息，保存在tcpi中
 bool TcpConnection::getTcpInfo(struct tcp_info *tcpi) const
 {
     return socket_->getTcpInfo(tcpi);
 }
 
+//已字符串的形式储存TCP连接的信息
 string TcpConnection::getTcpInfoString() const
 {
     char buf[1024];
@@ -76,12 +80,13 @@ string TcpConnection::getTcpInfoString() const
     return buf;
 }
 
-//利用缓冲区发送数据
+//发送数据
 void TcpConnection::send(const void *data, int len)
 {
     send(StringPiece(static_cast<const char *>(data), len));
 }
 
+//发送字符串
 void TcpConnection::send(const StringPiece &message)
 {
     if (state_ == kConnected)
@@ -99,6 +104,7 @@ void TcpConnection::send(const StringPiece &message)
     }
 }
 
+//发送缓冲区中的数据
 void TcpConnection::send(Buffer *buf)
 {
     if (state_ == kConnected)
@@ -129,13 +135,15 @@ void TcpConnection::sendInLoop(const void *data, size_t len)
     ssize_t nwrote = 0;
     size_t remaining = len;
     bool faultError = false;
+    //连接已断开就放弃发送
     if (state_ == kDisconnected)
     {
         LOG_WARN << "disconnected, give up writing";
         return;
     }
-    // 如果发送缓冲区中已经有待发送的数据，就不能直接写入套接字了，会造成数据乱序，只能把数据先写入缓冲区
+    //如果发送缓冲区中已经有待发送的数据，就不能直接写入套接字了，会造成数据乱序，只能把数据先写入缓冲区
     //如果发送缓冲区是空，则可以直接开始写入
+    //channel不在监听可写信号，只有缓冲区有数据等待送时，才会监听
     if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
     {
         //第一次往套接字中写数据
@@ -149,15 +157,15 @@ void TcpConnection::sendInLoop(const void *data, size_t len)
                 loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
             }
         }
-        else // nwrote < 0
+        else
         {
             nwrote = 0;
-            if (errno != EWOULDBLOCK)
+            if (errno != EWOULDBLOCK) //在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误
             {
                 LOG_SYSERR << "TcpConnection::sendInLoop";
                 //EPIPE ：Broken pipe
                 //ECONNRESET：套接字关闭了还往里面写数据
-                if (errno == EPIPE || errno == ECONNRESET) // FIXME: any others?
+                if (errno == EPIPE || errno == ECONNRESET)
                 {
                     faultError = true;
                 }
@@ -166,10 +174,12 @@ void TcpConnection::sendInLoop(const void *data, size_t len)
     }
 
     assert(remaining <= len);
+    //把剩余的数据写入缓冲区
+    //如果出现了错误，数据就不同再缓冲了，直接丢弃
     if (!faultError && remaining > 0)
     {
         size_t oldLen = outputBuffer_.readableBytes();
-        //触发高水位回调
+        //触发高水位回调，类似ET,只会触发一次，所以还要检测oldLen < highWaterMark_
         if (oldLen + remaining >= highWaterMark_ && oldLen < highWaterMark_ && highWaterMarkCallback_)
         {
             loop_->queueInLoop(std::bind(highWaterMarkCallback_, shared_from_this(), oldLen + remaining));
@@ -196,8 +206,10 @@ void TcpConnection::shutdown()
 void TcpConnection::shutdownInLoop()
 {
     loop_->assertInLoopThread();
+    //不在等待可写信号时才能关闭，防止丢失数据
     if (!channel_->isWriting())
     {
+        //shutdown(sockfd, SHUT_WR)
         socket_->shutdownWrite();
     }
 }
@@ -205,7 +217,6 @@ void TcpConnection::shutdownInLoop()
 //强行关闭读写两端
 void TcpConnection::forceClose()
 {
-    // FIXME: use compare and swap
     if (state_ == kConnected || state_ == kDisconnecting)
     {
         setState(kDisconnecting);
@@ -252,6 +263,7 @@ const char *TcpConnection::stateToString() const
 
 void TcpConnection::setTcpNoDelay(bool on)
 {
+    //::setsockopt(sockfd_, IPPROTO_TCP, TCP_NODELAY,&optval, static_cast<socklen_t>(sizeof optval));
     socket_->setTcpNoDelay(on);
 }
 
@@ -290,13 +302,14 @@ void TcpConnection::connectEstablished()
     loop_->assertInLoopThread();
     assert(state_ == kConnecting);
     setState(kConnected);
-    //给Channel一个TcpConnection对象的指针指针，防止TcpCOnnection提前析构
+    //给Channel一个TcpConnection对象的指针指针，防止TcpConnection提前析构
     channel_->tie(shared_from_this());
     channel_->enableReading();
     //连接建立后的回调函数
     connectionCallback_(shared_from_this());
 }
 
+//关闭这个连接
 void TcpConnection::connectDestroyed()
 {
     loop_->assertInLoopThread();
@@ -304,26 +317,26 @@ void TcpConnection::connectDestroyed()
     {
         setState(kDisconnected);
         channel_->disableAll();
-
         connectionCallback_(shared_from_this());
     }
     channel_->remove();
 }
 
+//接收到可读信号时调用的函数
 void TcpConnection::handleRead(Timestamp receiveTime)
 {
     loop_->assertInLoopThread();
     int savedErrno = 0;
-    //先读入缓冲区
+    //先读入缓冲区，一次就能读完
     ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
     if (n > 0)
     {
-        //收到消息，调用回调函数
+        //收到数据，数据已存入缓冲区，调用消息处理函数
         messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
     }
     else if (n == 0)
     {
-        //读到的字节数为0，说明对方已经关闭，回调自身的close函数
+        //接收到可读信号，但读到的字节数为0，说明对方已经关闭，回调自身的close函数
         handleClose();
     }
     else
@@ -345,12 +358,13 @@ void TcpConnection::handleWrite()
                                    outputBuffer_.readableBytes());
         if (n > 0)
         {
-            //从缓冲区中取出n字节，代表已经发送
+            //从缓冲区中取出n字节，代表已经发送n字节数据
             outputBuffer_.retrieve(n);
-            //数据发送完毕则停止观测可写事件，没有的话，继续观测
+            //数据发送完毕则停止观测可写事件，防止busy loop,没有的话，继续观测
             if (outputBuffer_.readableBytes() == 0)
             {
                 channel_->disableWriting();
+                //调用低水位处理函数
                 if (writeCompleteCallback_)
                 {
                     loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
@@ -374,19 +388,18 @@ void TcpConnection::handleWrite()
     }
 }
 
-
 void TcpConnection::handleClose()
 {
     loop_->assertInLoopThread();
     LOG_TRACE << "fd = " << channel_->fd() << " state = " << stateToString();
     assert(state_ == kConnected || state_ == kDisconnecting);
-    // we don't close fd, leave it to dtor, so we can find leaks easily.
     setState(kDisconnected);
     channel_->disableAll();
 
     TcpConnectionPtr guardThis(shared_from_this());
     connectionCallback_(guardThis);
-    // must be the last line
+    //服务端关闭套接字调用&TcpServer::removeConnection，最终调用&TcpConnection::connectDestroyed
+    //客户端关闭套接字调用TcpConnection::connectDestroyed
     closeCallback_(guardThis);
 }
 
