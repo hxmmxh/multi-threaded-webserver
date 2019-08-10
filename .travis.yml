@@ -1,5 +1,5 @@
 language: cpp
 dist: Bionic 
-
-script: 
- - cd WebServer&& make
+compiler: -g++
+os: linux
+script: true

@@ -271,11 +271,6 @@ int connect(int sockfd, const struct sockaddr *servaddr, socklen_t addrlen);
 * 调用EventLoop::runInLoop运行TcpConnection::connectionEstablish()
 
 ### 创建线程池
-  /// - 0 means all I/O in loop's thread, no thread will created.
-  ///   this is the default value.
-  /// - 1 means all I/O in another thread.
-  /// - N means a thread pool with N threads, new connections
-  ///   are assigned on a round-robin basis.
 
 
 
@@ -315,3 +310,6 @@ int connect(int sockfd, const struct sockaddr *servaddr, socklen_t addrlen);
 ## TcpClient
 Tcp客户端的实现
 * 每个TcpClient只管理一个TcpConnection
+
+
+[SO_REUSEPORT](https://blog.csdn.net/Yaokai_AssultMaster/article/details/68951150)

@@ -40,11 +40,7 @@ public:
     {
         threadInitCallback_ = cb;
     }
-    std::shared_ptr<EventLoopThreadPool> threadPool()
-    {
-        return threadPool_;
-    }
-
+    
     void start(); //开始监听套接字
     //都要传递给TcpConnection类使用
     void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
