@@ -11,9 +11,6 @@ class HttpResponse;
 class HttpServer
 {
 public:
-    typedef std::function<void(const HttpRequest &,
-                               HttpResponse *)>
-        HttpCallback;
     HttpServer(EventLoop *loop,
                const InetAddress &listenAddr,
                const string &name,
@@ -35,10 +32,10 @@ private:
     void onMessage(const TcpConnectionPtr &conn,
                    Buffer *buf,
                    Timestamp receiveTime);
-    void onRequest(const TcpConnectionPtr &, const HttpRequest &);
+    void ReplyRequest(const TcpConnectionPtr &, const HttpRequest &);   
+    void WriteResponse(const HttpRequest&, HttpResponse*);
 
     TcpServer server_;
-    HttpCallback httpCallback_;
 }
 } // namespace hxmmxh
 

@@ -289,6 +289,36 @@ public:
 
     ssize_t readFd(int fd, int *savedErrno);
 
+    //下面四个函数用于解析http报文
+    const char *findCRLF() const
+    {
+        const char *CRLF = "\r\n";
+        const char *crlf = std::search(peek(), beginWrite(), CRLF, CRLF + 2);
+        return crlf == beginWrite() ? NULL : crlf;
+    }
+
+    const char *findCRLF(const char *start) const
+    {
+        assert(peek() <= start);
+        assert(start <= beginWrite());
+        const char *crlf = std::search(start, beginWrite(), CRLF, CRLF + 2);
+        return crlf == beginWrite() ? NULL : crlf;
+    }
+
+    const char *findEOL() const
+    {
+        const void *eol = memchr(peek(), '\n', readableBytes());
+        return static_cast<const char *>(eol);
+    }
+
+    const char *findEOL(const char *start) const
+    {
+        assert(peek() <= start);
+        assert(start <= beginWrite());
+        const void *eol = memchr(start, '\n', beginWrite() - start);
+        return static_cast<const char *>(eol);
+    }
+
 private:
     //返回buffer_的第一个元素的指针
     char *begin()

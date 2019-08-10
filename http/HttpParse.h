@@ -10,20 +10,20 @@ class HttpParse
 public:
     enum HttpRequestParseState
     {
-        kExpectRequestLine, //等待请求行
-        kExpectHeaders,     //等待头部
-        kExpectBody,        //等待主体
-        kGotAll,            //解析完毕
+        ExpectRequestLine, //等待请求行
+        ExpectHeaders,     //等待头部
+        ExpectBody,        //等待主体
+        Success,            //解析完毕
     };
     HttpParse()
         : state_(kExpectRequestLine)
     {
     }
-    //开始解析，出错返回flase
+    //开始解析buf里的Http报文，出错返回flase
     bool parseRequest(Buffer *buf, Timestamp receiveTime);
-    bool gotAll() const
+    bool success() const
     {
-        return state_ == kGotAll;
+        return state_ == Success;
     }
     void reset()
     {

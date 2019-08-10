@@ -1,7 +1,11 @@
 #include "HttpParse.h"
 #include "../WebServer/Buffer.h"
 
+#include <string>
+#include <map>
+
 using namespace hxmmxh;
+
 
 bool HttpContext::processRequestLine(const char *begin, const char *end)
 {
@@ -103,7 +107,7 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
         }
         else if (state_ == kExpectBody)
         {
-            // FIXME:
+            //目前的请求报文中都没有报文主体
         }
     }
     return ok;

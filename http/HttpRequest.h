@@ -101,12 +101,12 @@ public:
     }
     void setPath(const char *start, const char *end)
     {
-        URI_.assign(start, end);
+        path_.assign(start, end);
     }
 
     const std::string &path() const
     {
-        return URI_;
+        return path_;
     }
 
     void setQuery(const char *start, const char *end)
