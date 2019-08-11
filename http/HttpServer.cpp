@@ -123,7 +123,7 @@ HttpServer::HttpServer(EventLoop *loop,
                        const InetAddress &listenAddr,
                        const string &name,
                        TcpServer::Option option)
-    : server_(loop, listenAddr, name, option),
+    : server_(loop, listenAddr, name, option)
 {
     server_.setMessageCallback(
         std::bind(&HttpServer::onMessage, this, _1, _2, _3));
@@ -140,6 +140,8 @@ void HttpServer::onMessage(const TcpConnectionPtr &conn,
                            Buffer *buf,
                            Timestamp receiveTime)
 {
+    for (int i = 0,a=0; i < 10000;++i)
+        a+=i;
     HttpParse parse_;
     //先解析数据传来的请求报文
     if (!parse_.parseRequest(buf, receiveTime))
@@ -151,7 +153,7 @@ void HttpServer::onMessage(const TcpConnectionPtr &conn,
     if (parse_.success())
     {
         //解析成功就回复
-        Reply(conn, parse_.request());
+        ReplyRequest(conn, parse_.request());
     }
 }
 
@@ -160,40 +162,46 @@ void HttpServer::ReplyRequest(const TcpConnectionPtr &conn, const HttpRequest re
 {
     //先鉴别短链接或长连接
     const string &connection = req.getHeader("Connection");
-    bool close = connection == "close" ||
-                 (req.getVersion() == HttpRequest::Http10 && connection != "Keep-Alive");
+    bool close = (connection != "Keep-Alive"&&connection!="keep-alive");
+    //查看webbench源码发现它默认就是短连接，所以这里就取巧通过版本号判断长短连接
+    //HTTP1.0就是短连接，HTTP1.1就是长连接
+    //后面又使用ab测试，所以改回去
+    //bool close = (req.getVersion() == HttpRequest::Http10);
     HttpResponse response(close);
     //根据请求报文写响应报文
-    WriteRequest(req, &response);
+    WriteResponse(req, &response);
     Buffer buf;
     response.appendToBuffer(&buf);
     conn->send(&buf);
     if (response.closeConnection())
     {
-        conn->shutdown();
+       conn->shutdown();
     }
 }
 
-void HttpServer::WriteResponse(const HttpRequest &req, HttpResponse *resp);
+void HttpServer::WriteResponse(const HttpRequest &req, HttpResponse *resp)
 {
-    resp->setVersion(req->getVersion());
+    if(req.getVersion()==HttpRequest::Http10)
+        resp->setVersion(HttpResponse::Http10);
+    else
+        resp->setVersion(HttpResponse::Http11);
     std::string path = req.path();
     if (path == "/hello")
     {
         resp->setStatusCode(HttpResponse::S200Ok);
         resp->setStatusMessage("OK");
         resp->setContentType("text/plain");
-        resp->addHeader("Server", "hxm's Http Server")
+        resp->addHeader("Server", "hxm's Http Server");
         //报文主题
-        if(req->method==HttpRequest::Get)
-        resp->setBody("hello, world!\n");
+        if(req.method()==HttpRequest::Get)
+            resp->setBody("hello, world!\n");
     }
     else if (req.path() == "/favicon.ico")
     {
         resp->setStatusCode(HttpResponse::S200Ok);
         resp->setStatusMessage("OK");
         resp->setContentType("image/png");
-        resp->addHeader("Server", "hxm's Http Server")
+        resp->addHeader("Server", "hxm's Http Server");
         resp->setBody(string(favicon, sizeof favicon));
     }
     else if (req.path() == "/")
@@ -210,7 +218,7 @@ void HttpServer::WriteResponse(const HttpRequest &req, HttpResponse *resp);
     }
     else
     {
-        resp->setStatusCode(HttpResponse::k404NotFound);
+        resp->setStatusCode(HttpResponse::S404NotFound);
         resp->setStatusMessage("Not Found");
         resp->setCloseConnection(true);
     }

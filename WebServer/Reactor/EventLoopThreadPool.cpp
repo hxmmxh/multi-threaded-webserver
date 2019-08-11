@@ -15,6 +15,10 @@ EventLoopThreadPool::EventLoopThreadPool(EventLoop *baseLoop, const std::string 
 {
 }
 
+EventLoopThreadPool::~EventLoopThreadPool()
+{
+  
+}
 
 void EventLoopThreadPool::start(const ThreadInitCallback &cb)
 {

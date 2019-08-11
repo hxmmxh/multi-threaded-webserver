@@ -106,10 +106,19 @@ public:
     void setPath(const char *start, const char *end)
     {
         path_.assign(start, end);
+        size_t slash = path_.find_last_of('/');
+        if(slash==std::string::npos)
+            filename_ = path_;
+        else
+            filename_ = path_.substr(slash + 1);
     }
     const std::string &path() const
     {
         return path_;
+    }
+    const std::string &filename() const
+    {
+        return filename_;
     }
     void setQuery(const char *start, const char *end)
     {
@@ -135,13 +144,13 @@ public:
     //end指向'/r'
     void addHeader(const char *start, const char *colon, const char *end)
     {
-        string field(start, colon);
+        std::string field(start, colon);
         ++colon;
         while (colon < end && isspace(*colon))
         {
             ++colon;
         }
-        string value(colon, end);
+        std::string value(colon, end);
         while (!value.empty() && isspace(value[value.size() - 1]))
         {
             value.resize(value.size() - 1);
@@ -150,10 +159,10 @@ public:
     }
 
     //查找首部字段的值
-    std::string getHeader(const string &field) const
+    std::string getHeader(const std::string &field) const
     {
-        string result;
-        std::map<string, string>::const_iterator it = headers_.find(field);
+        std::string result;
+        std::map<std::string, std::string>::const_iterator it = headers_.find(field);
         if (it != headers_.end())
         {
             result = it->second;
@@ -171,6 +180,7 @@ private:
     HttpVersion version_;
     //URI中包含文件路径和？后面的查询字符串
     std::string path_;
+    std::string filename_;
     std::string query_;
     Timestamp receiveTime_;
     //首部字段，由首部字段名和字段值构成

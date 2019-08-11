@@ -31,7 +31,7 @@ void HttpResponse::appendToBuffer(Buffer *output) const
     else
     {
         output->append("Connection: Keep-Alive\r\n");
-        output->append("Keep-Alive: timeout=" + to_string(DEFAULT_KEEP_ALIVE_TIME) + "\r\n");
+        output->append("Keep-Alive: timeout=" + std::to_string(DEFAULT_KEEP_ALIVE_TIME) + "\r\n");
     }
 
     for (const auto &header : headers_)

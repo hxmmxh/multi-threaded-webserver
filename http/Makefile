@@ -1,5 +1,4 @@
 CPPFLAGS= -pthread
-CC = g++
 
 
 HEADERS=$(wildcard *.h) 

@@ -88,7 +88,7 @@ public:
     void setBody(const std::string &body)
     {
         body_ = body;
-        addHeader("Content-Length", to_string(body.size()));
+        addHeader("Content-Length", std::to_string(body.size()));
     }
     //把响应报文格式化写入Buffer中
     void appendToBuffer(Buffer *output) const;

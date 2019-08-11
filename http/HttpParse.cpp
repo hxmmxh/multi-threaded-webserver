@@ -6,7 +6,7 @@
 
 using namespace hxmmxh;
 
-bool HttpContext::processRequestLine(const char *begin, const char *end)
+bool HttpParse::processRequestLine(const char *begin, const char *end)
 {
     bool succeed = false;
     const char *start = begin;
@@ -52,11 +52,11 @@ bool HttpContext::processRequestLine(const char *begin, const char *end)
     return succeed;
 }
 
-bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
+bool HttpParse::parseRequest(Buffer *buf, Timestamp receiveTime)
 {
     bool ok = true;
     bool hasMore = true;
-    while (hasMore)
+    while (hasMore && ok)
     {
         //需要解析请求行
         if (state_ == ExpectRequestLine)
@@ -71,14 +71,16 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
                     //buf里字符指针往后移动到下一行
                     buf->retrieveUntil(crlf + 2);
                     state_ = ExpectHeaders;
-                }
-                else
-                {
-                    hasMore = false;
+                    if (buf->readableBytes() == 0)
+                    {
+                        hasMore = false;
+                        state_ = Success;
+                    }
                 }
             }
             else
             {
+                ok = false;
                 hasMore = false;
             }
         }
@@ -93,6 +95,11 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
                 {
                     request_.addHeader(buf->peek(), colon, crlf);
                     buf->retrieveUntil(crlf + 2);
+                    if (buf->readableBytes() == 0)
+                    {
+                        hasMore = false;
+                        state_ = Success;
+                    }
                 }
                 //没有找到冒号，说明这行不包含首部字段，去判断它是否为空行
                 else
@@ -102,6 +109,7 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
             }
             else
             {
+                ok = false;
                 hasMore = false;
             }
         }
@@ -111,10 +119,15 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
             const char *crlf = buf->findCRLF();
             if (crlf)
             {
-                if (crlf == buff->peek())
+                if (crlf == buf->peek())
                 {
                     state_ = ExpectBody;
                     buf->retrieveUntil(crlf + 2);
+                    if (buf->readableBytes() == 0)
+                    {
+                        hasMore = false;
+                        state_ = Success;
+                    }
                 }
                 else
                 {
@@ -124,12 +137,14 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
             }
             else
             {
+                ok = false;
                 hasMore = false;
             }
         }
+        //实际上测试用的请求报文都没有主体
         else if (state_ == ExpectBody)
         {
-            state_ == Success;
+            state_ = Success;
             hasMore = false;
         }
     }

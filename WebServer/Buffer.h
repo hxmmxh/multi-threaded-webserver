@@ -301,6 +301,7 @@ public:
     {
         assert(peek() <= start);
         assert(start <= beginWrite());
+        const char *CRLF = "\r\n";
         const char *crlf = std::search(start, beginWrite(), CRLF, CRLF + 2);
         return crlf == beginWrite() ? NULL : crlf;
     }

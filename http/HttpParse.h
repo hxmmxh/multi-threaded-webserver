@@ -5,6 +5,7 @@
 
 namespace hxmmxh
 {
+class Buffer;
 class HttpParse
 {
 public:
@@ -17,7 +18,7 @@ public:
         Success,           //解析完毕
     };
     HttpParse()
-        : state_(kExpectRequestLine)
+        : state_(ExpectRequestLine)
     {
     }
     //开始解析buf里的Http报文，出错返回flase,receiveTime为收到可读信号的时间
@@ -25,12 +26,6 @@ public:
     bool success() const
     {
         return state_ == Success;
-    }
-    void reset()
-    {
-        state_ = kExpectRequestLine;
-        HttpRequest dummy;
-        request_.swap(dummy);
     }
     const HttpRequest &request() const
     {
