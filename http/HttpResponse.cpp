@@ -5,6 +5,8 @@
 
 using namespace hxmmxh;
 
+const int DEFAULT_KEEP_ALIVE_TIME = 5 * 60 * 1000; // ms
+
 //往缓冲区中写入返回报文
 //版本+空格+状态码+空格+状态码描述+回车+换行
 //头部字段名+':'+字段值+回车+换行
@@ -28,9 +30,8 @@ void HttpResponse::appendToBuffer(Buffer *output) const
     }
     else
     {
-        snprintf(buf, sizeof buf, "Content-Length: %zd\r\n", body_.size());
-        output->append(buf);
         output->append("Connection: Keep-Alive\r\n");
+        output->append("Keep-Alive: timeout=" + to_string(DEFAULT_KEEP_ALIVE_TIME) + "\r\n");
     }
 
     for (const auto &header : headers_)

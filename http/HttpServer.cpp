@@ -124,10 +124,7 @@ HttpServer::HttpServer(EventLoop *loop,
                        const string &name,
                        TcpServer::Option option)
     : server_(loop, listenAddr, name, option),
-      httpCallback_(detail::defaultHttpCallback)
 {
-    server_.setConnectionCallback(
-        std::bind(&HttpServer::onConnection, this, _1));
     server_.setMessageCallback(
         std::bind(&HttpServer::onMessage, this, _1, _2, _3));
 }
@@ -137,14 +134,6 @@ void HttpServer::start()
     LOG_WARN << "HttpServer[" << server_.name()
              << "] starts listenning on " << server_.ipPort();
     server_.start();
-}
-
-void HttpServer::onConnection(const TcpConnectionPtr &conn)
-{
-    if (conn->connected())
-    {
-        conn->setContext(HttpContext());
-    }
 }
 
 void HttpServer::onMessage(const TcpConnectionPtr &conn,
@@ -161,7 +150,7 @@ void HttpServer::onMessage(const TcpConnectionPtr &conn,
     }
     if (parse_.success())
     {
-        //解析成功
+        //解析成功就回复
         Reply(conn, parse_.request());
     }
 }

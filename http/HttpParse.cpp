@@ -6,7 +6,6 @@
 
 using namespace hxmmxh;
 
-
 bool HttpContext::processRequestLine(const char *begin, const char *end)
 {
     bool succeed = false;
@@ -59,7 +58,8 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
     bool hasMore = true;
     while (hasMore)
     {
-        if (state_ == kExpectRequestLine)
+        //需要解析请求行
+        if (state_ == ExpectRequestLine)
         {
             const char *crlf = buf->findCRLF();
             if (crlf)
@@ -68,8 +68,9 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
                 if (ok)
                 {
                     request_.setReceiveTime(receiveTime);
+                    //buf里字符指针往后移动到下一行
                     buf->retrieveUntil(crlf + 2);
-                    state_ = kExpectHeaders;
+                    state_ = ExpectHeaders;
                 }
                 else
                 {
@@ -81,7 +82,8 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
                 hasMore = false;
             }
         }
-        else if (state_ == kExpectHeaders)
+        //需要解析头部
+        else if (state_ == ExpectHeaders)
         {
             const char *crlf = buf->findCRLF();
             if (crlf)
@@ -90,24 +92,45 @@ bool HttpContext::parseRequest(Buffer *buf, Timestamp receiveTime)
                 if (colon != crlf)
                 {
                     request_.addHeader(buf->peek(), colon, crlf);
+                    buf->retrieveUntil(crlf + 2);
                 }
+                //没有找到冒号，说明这行不包含首部字段，去判断它是否为空行
                 else
                 {
-                    // empty line, end of header
-                    // FIXME:
-                    state_ = kGotAll;
-                    hasMore = false;
+                    state_ = ExpectEmptyline;
                 }
-                buf->retrieveUntil(crlf + 2);
             }
             else
             {
                 hasMore = false;
             }
         }
-        else if (state_ == kExpectBody)
+        //解析空行
+        else if (state_ == ExpectEmptyline)
         {
-            //目前的请求报文中都没有报文主体
+            const char *crlf = buf->findCRLF();
+            if (crlf)
+            {
+                if (crlf == buff->peek())
+                {
+                    state_ = ExpectBody;
+                    buf->retrieveUntil(crlf + 2);
+                }
+                else
+                {
+                    hasMore = false;
+                    ok = false;
+                }
+            }
+            else
+            {
+                hasMore = false;
+            }
+        }
+        else if (state_ == ExpectBody)
+        {
+            state_ == Success;
+            hasMore = false;
         }
     }
     return ok;

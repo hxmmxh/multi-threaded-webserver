@@ -11,15 +11,16 @@ public:
     enum HttpRequestParseState
     {
         ExpectRequestLine, //等待请求行
-        ExpectHeaders,     //等待头部
+        ExpectHeaders,     //等待头部字段
+        ExpectEmptyline,   //等待空行
         ExpectBody,        //等待主体
-        Success,            //解析完毕
+        Success,           //解析完毕
     };
     HttpParse()
         : state_(kExpectRequestLine)
     {
     }
-    //开始解析buf里的Http报文，出错返回flase
+    //开始解析buf里的Http报文，出错返回flase,receiveTime为收到可读信号的时间
     bool parseRequest(Buffer *buf, Timestamp receiveTime);
     bool success() const
     {
@@ -42,8 +43,8 @@ public:
     }
 
 private:
+    //解析请求行
     bool processRequestLine(const char *begin, const char *end);
-
     HttpRequestParseState state_;
     HttpRequest request_;
 };

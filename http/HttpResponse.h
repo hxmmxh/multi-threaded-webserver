@@ -25,12 +25,14 @@ public:
         Http10,
         Http11
     };
+
     explicit HttpResponse(bool close)
         : statusCode_(SUnknown),
-          version_(VUnknown)
-              closeConnection_(close)
+          version_(VUnknown),
+          closeConnection_(close)
     {
     }
+
     void setVersion(HttpVersion v)
     {
         version_ = v;
@@ -54,11 +56,11 @@ public:
         }
         return result;
     }
+
     void setStatusCode(HttpStatusCode code)
     {
         statusCode_ = code;
     }
-
     void setStatusMessage(const std::string &message)
     {
         statusMessage_ = message;
@@ -73,12 +75,11 @@ public:
     {
         return closeConnection_;
     }
+
     void setContentType(const std::string &contentType)
     {
         addHeader("Content-Type", contentType);
     }
-
-    // FIXME: replace string with StringPiece
     void addHeader(const std::string &key, const std::string &value)
     {
         headers_[key] = value;
@@ -87,18 +88,22 @@ public:
     void setBody(const std::string &body)
     {
         body_ = body;
+        addHeader("Content-Length", to_string(body.size()));
     }
-
+    //把响应报文格式化写入Buffer中
     void appendToBuffer(Buffer *output) const;
 
 private:
-private:
-    std::map<std::string, std::string> headers_;
+    //是否要在发送报文后关闭连接
+    bool closeConnection_;
+    //版本+空格+状态码+空格+状态码描述+回车+换行
+    HttpVersion version_;
     HttpStatusCode statusCode_;
     std::string statusMessage_;
-    HttpVersion version_;
-    bool closeConnection_;
-    std::string body_; //报文主体
+    //头部字段
+    std::map<std::string, std::string> headers_;
+    //报文主体
+    std::string body_;
 };
 } // namespace hxmmxh
 #endif
