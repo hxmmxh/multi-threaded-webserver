@@ -140,8 +140,6 @@ void HttpServer::onMessage(const TcpConnectionPtr &conn,
                            Buffer *buf,
                            Timestamp receiveTime)
 {
-    for (int i = 0,a=0; i < 10000;++i)
-        a+=i;
     HttpParse parse_;
     //先解析数据传来的请求报文
     if (!parse_.parseRequest(buf, receiveTime))
@@ -195,6 +193,13 @@ void HttpServer::WriteResponse(const HttpRequest &req, HttpResponse *resp)
         //报文主题
         if(req.method()==HttpRequest::Get)
             resp->setBody("hello, world!\n");
+        //测试不同数据大小对性能的影响
+        /*
+        std::string reply(1024, 'a');
+        reply.append('\n');
+        if(req.method()==HttpRequest::Get)
+            resp->setBody(reply);
+        */
     }
     else if (req.path() == "/favicon.ico")
     {
