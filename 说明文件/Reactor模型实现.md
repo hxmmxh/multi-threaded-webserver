@@ -118,10 +118,9 @@ pragma GCC diagnostic [error|warning|ignored] "-W<警告选项>"
 
 ## Poller
 * 实现IO复用的类
-* 同时支持poll和epoll
+* 同时支持poll和epoll[IO复用函数介绍](IO复用.md)
 * 是EventLoop的间接成员，只供其owner EventLoop在IO线程调用
 * 管理Channel,但不拥有Channel,Channel在析构之前必须自己解除在Poller中的注册
-
 
 
 ## Acceptor
