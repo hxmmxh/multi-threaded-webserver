@@ -15,7 +15,7 @@
 * 供TcpServer使用，生命期由TcpServer控制
 * 功能是用于accept新的Tcp连接，并通过回调通知使用者
 
-###accept函数介绍
+### accept函数介绍
 ```cpp
 #include <sys/socket.h>
 int accept(int sockfd, struct sockaddr *cliaddr, socklen_t *addrlen);
@@ -162,6 +162,10 @@ int connect(int sockfd, const struct sockaddr *servaddr, socklen_t addrlen);
 
 
 ### 正常状态下主动关闭连接
+
+
+
+
 * close()和shutdown()的区别
     * close把描述符的引用计数减一，仅在该计数变为0时才关闭套接字，但shutdown可以不管引用计数就激发tcp的正常连接终止序列
     * close同时终止读方向和写方向的数据传送，而shutdown具有可选的行为
