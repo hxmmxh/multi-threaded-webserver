@@ -1,4 +1,4 @@
-#include "../Date.h"
+#include "Date.h"
 
 #include <iostream>
 
@@ -40,8 +40,8 @@ int daysOfMonth(int year, int month)
 {
     static int days[2][kMonthsOfYear + 1] =
         {
-            {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
-            {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
+            {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},//非闰年
+            {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},//闰年
         };
     return days[isLeapYear(year)][month];
 }
@@ -62,17 +62,19 @@ int main()
     struct tm t1 = *gmtime(&now);    //UTC时间，无时区转换
     struct tm t2 = *localtime(&now); //本地时间，有时区转换
     Date someDay(2008, 9, 10);
-    cout << someDay.toIsoString() << endl;
+    cout << someDay.toIsoString() << endl;//结果应为2008-9-10
     passByValue(someDay);          //结果应为2008-9-10
     passByConstReference(someDay); //结果应为2008-9-10
+   
     Date todayUtc(t1);
-    cout << todayUtc.toIsoString() << endl;
+    cout << todayUtc.toIsoString() << endl;// 输出当前的日期
     Date todayLocal(t2);
     cout << todayLocal.toIsoString() << endl;
 
     int julianDayNumber = 2415021; //1900-1-1
     int weekDay = 1;               // Monday
 
+    // 判断儒略日和日历之间的换算有没有错误
     for (int year = 1900; year < 2500; ++year)
     {
         //如果不是闰年，则3月1号和2月29是同一天，用来判断儒略日数的计算是否正确考虑到了闰年

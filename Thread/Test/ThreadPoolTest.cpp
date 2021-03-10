@@ -36,6 +36,7 @@ void test(int maxSize)
   }
   std::cout << "Done\n";
 
+  // 让主线程等待线程池了的线程完成工作
   CountDownLatch latch(1);
   pool.run(std::bind(&CountDownLatch::countDown, &latch));
   latch.wait();
@@ -49,5 +50,4 @@ int main()
   test(5);
   test(10);
   test(50);
-  //testMove();
 }

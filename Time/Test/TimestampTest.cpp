@@ -1,4 +1,4 @@
-#include "../Timestamp.h"
+#include "Timestamp.h"
 
 #include <vector>
 #include <iostream>
@@ -37,7 +37,7 @@ void benchmark()
     for (int i = 1; i < kNumber; ++i)
     {
         int64_t next = stamps[i].microSecondsSinceEpoch();
-        //stamps中相邻两个元素创建的时间间隔
+        //stamps中相邻两个元素创建的时间间隔,微妙
         int64_t inc = next - start;
         start = next;
         if (inc < 0)

@@ -5,7 +5,7 @@
 #ifndef HXMMXH_CALLBACKS_H
 #define HXMMXH_CALLBACKS_H
 
-#include "../Time/Timestamp.h"
+#include "Timestamp.h"
 #include <functional>
 #include <memory>
 

@@ -27,10 +27,11 @@ public:
     {
         std::swap(microSecondsSinceEpoch_, that.microSecondsSinceEpoch_);
     }
+
     //转换成"seconds.microseconds"的格式小数点后保留6位，例如”123.213122“
     std::string toString() const;
     //转换成格式化的时间
-    //
+    //年月日 时:分:秒.微妙“
     std::string toFormattedString(bool showMicroseconds = true) const;
 
     bool valid() const { return microSecondsSinceEpoch_ > 0; }
@@ -41,11 +42,14 @@ public:
         return static_cast<time_t>(microSecondsSinceEpoch_ / kMicroSecondsPerSecond);
     }
 
+    // 返回当前时间
     static Timestamp now();
+    // 返回一个非法的时间戳
     static Timestamp invalid()
     {
         return Timestamp();
     }
+    // 把秒转化成微秒
     static Timestamp fromUnixTime(time_t t)
     {
         return fromUnixTime(t, 0);

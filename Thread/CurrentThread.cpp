@@ -11,6 +11,7 @@ namespace detail
 {
 pid_t gettid()
 {
+  // 获取线程id唯一标识
   return static_cast<pid_t>(::syscall(SYS_gettid));
 }
 

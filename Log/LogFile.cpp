@@ -249,7 +249,7 @@ void LogFile::append_unlocked(const char *logline, int len)
   //写入长度为len的logline日志
   file_->append(logline, len);
 
-  if (file_->writtenBytes() > rollSize_) //文件写满
+  if (static_cast<size_t>(file_->writtenBytes()) > rollSize_) //文件写满
   {
     rollFile(); //换一个文件
   }

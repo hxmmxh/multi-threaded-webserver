@@ -14,10 +14,12 @@ namespace hxmmxh
 namespace detail
 {
 
+// fork一个新进程后
 void afterFork()
 {
   CurrentThread::t_cachedTid = 0;
   CurrentThread::t_threadName = "main";
+  // 先把t_cachedTid设为0，tid()内部才会重新去获得线程ID
   CurrentThread::tid();
 }
 
@@ -40,6 +42,7 @@ struct ThreadData
   typedef Thread::ThreadFunc ThreadFunc;
   ThreadFunc func_;
   string name_;
+  // 下面两个设为指针因为需要被修改
   pid_t *tid_;
   CountDownLatch *latch_;
 
@@ -53,6 +56,7 @@ struct ThreadData
         latch_(latch)
   {
   }
+
   //在线程中运行函数
   void runInThread()
   {
@@ -97,6 +101,7 @@ Thread::Thread(ThreadFunc func, const string &n)
   setDefaultName();
 }
 
+// 如果开始运行且没有被join，则分离
 Thread::~Thread()
 {
   if (started_ && !joined_)
@@ -116,7 +121,6 @@ void Thread::setDefaultName()
     name_ = buf;
   }
 }
-
 
 void Thread::start()
 {

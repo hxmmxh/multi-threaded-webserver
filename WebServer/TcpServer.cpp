@@ -1,10 +1,10 @@
 #include "TcpServer.h"
 
 #include "Acceptor.h"
-#include "Reactor/EventLoop.h"
-#include "Reactor/EventLoopThreadPool.h"
-#include "Sockets/SocketsOps.h"
-#include "../Log/Logging.h"
+#include "EventLoop.h"
+#include "EventLoopThreadPool.h"
+#include "SocketsOps.h"
+#include "Logging.h"
 
 #include <functional>
 #include <stdio.h> // snprintf

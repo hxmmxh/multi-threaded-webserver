@@ -8,12 +8,12 @@
 using namespace hxmmxh;
 
 ThreadPool::ThreadPool(const std::string &nameArg)
-    : mutex_(),
-      notEmpty_(),
-      notFull_(),
-      name_(nameArg),
+    : name_(nameArg),
       maxQueueSize_(0),
-      running_(false)
+      running_(false),
+      mutex_(),
+      notEmpty_(),
+      notFull_()
 {
 }
 
@@ -34,9 +34,12 @@ void ThreadPool::start(int numThreads)
     {
         char id[32];
         snprintf(id, sizeof id, "%d", i + 1);
+        // 创建线程，线程里运行的函数是runInThread,线程名是线程池名字+id
         threads_.emplace_back(new Thread(std::bind(&ThreadPool::runInThread, this), name_ + id));
+        // 创建完后立刻运行
         threads_[i]->start();
     }
+    // 如果没有创建线程池，那么主线程要调用线程开始时的运行函数
     if (numThreads == 0 && threadInitCallback_)
     {
         threadInitCallback_();
@@ -45,6 +48,7 @@ void ThreadPool::start(int numThreads)
 
 void ThreadPool::stop()
 {
+    // 为了让所有的工作线程都已经开始运行
     usleep(10);
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -52,6 +56,7 @@ void ThreadPool::stop()
         //take()会阻塞在notEmpty中，条件为任务队列为空且线程池正在运行
         notEmpty_.notify_all();
     }
+    // 等待所有工作线程结束
     for (auto &thr : threads_)
     {
         thr->join();
@@ -92,7 +97,7 @@ void ThreadPool::run(Task task)
 ThreadPool::Task ThreadPool::take()
 {
     std::unique_lock<std::mutex> lock(mutex_);
-    //线程词不运行时，即使任务队列为空，也不要再等待
+    //线程池不运行时，即使任务队列为空，也不要再等待
     while (queue_.empty() && running_)
         notEmpty_.wait(lock);
     Task task;

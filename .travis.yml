@@ -1,5 +1,0 @@
-language: cpp
-dist: Bionic 
-compiler: -g++
-os: linux
-script: true

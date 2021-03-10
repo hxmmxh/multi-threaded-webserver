@@ -3,9 +3,9 @@
 
 #include "Callbacks.h"
 #include "Buffer.h"
-#include "Sockets/InetAddress.h"
-#include "Sockets/Socket.h"
-#include "../Log/StringPiece.h"
+#include "InetAddress.h"
+#include "Socket.h"
+#include "StringPiece.h"
 
 #include <string>
 #include <memory>

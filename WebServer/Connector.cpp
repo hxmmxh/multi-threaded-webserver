@@ -1,8 +1,8 @@
 #include "Connector.h"
-#include "Reactor/Channel.h"
-#include "Reactor/EventLoop.h"
-#include "Sockets/SocketsOps.h"
-#include "../Log/Logging.h"
+#include "Channel.h"
+#include "EventLoop.h"
+#include "SocketsOps.h"
+#include "Logging.h"
 
 #include <cerrno>
 

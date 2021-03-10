@@ -1,7 +1,7 @@
 #ifndef HXMMXH_CONNECTOR_H
 #define HXMMXH_CONNECTOR_H
 
-#include "Sockets/InetAddress.h"
+#include "InetAddress.h"
 
 #include <functional>
 #include <memory>

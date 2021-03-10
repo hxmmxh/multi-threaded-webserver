@@ -1,8 +1,8 @@
 #include "TcpClient.h"
-#include "../Log/Logging.h"
+#include "Logging.h"
 #include "Connector.h"
-#include "Reactor/EventLoop.h"
-#include "Sockets/SocketsOps.h"
+#include "EventLoop.h"
+#include "SocketsOps.h"
 
 #include <stdio.h>
 

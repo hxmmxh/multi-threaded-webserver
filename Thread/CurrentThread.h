@@ -7,6 +7,10 @@ namespace hxmmxh
 {
 namespace CurrentThread
 {
+// __thread表示每个当前线程有一个该变量的实例.
+// __thread变量每一个线程有一份独立实体，各个线程的值互不干扰
+// 只能修饰POD类型(不带自定义的构造、拷贝、赋值、析构的类型，二进制内容可以任意复制memset,memcpy,且内容可以复原)
+// 不能修饰class类型
 // 要在*.c文件中引用另一个文件中的一个全局的变量，那就应该放在*.h中用extern来声明这个全局变量。
 extern __thread int t_cachedTid;
 //用string保存线程ID

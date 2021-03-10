@@ -1,10 +1,10 @@
 #include "TcpConnection.h"
 
-#include "../Log/Logging.h"
-#include "Reactor/Channel.h"
-#include "Reactor/EventLoop.h"
-#include "Sockets/Socket.h"
-#include "Sockets/SocketsOps.h"
+#include "Logging.h"
+#include "Channel.h"
+#include "EventLoop.h"
+#include "Socket.h"
+#include "SocketsOps.h"
 
 #include <functional>
 #include <errno.h>

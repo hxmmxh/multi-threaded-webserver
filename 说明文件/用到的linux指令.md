@@ -4,6 +4,7 @@
 - [查看网络信息](#查看网络信息)
   - [查看IP地址](#查看ip地址)
   - [netstat](#netstat)
+  - [lsof](#lsof)
 - [发起网络操作](#发起网络操作)
 ------------------------
 # 查看进程信息
@@ -63,6 +64,10 @@
  -----------------------
 # 查看网络信息
 
+tcpdump
+lsof
+netstat
+netcat
 ## 查看IP地址
 
 - `ifconfig`
@@ -70,6 +75,12 @@
 
 ## netstat
 
+## lsof
 
+- `lsof -iTCP`,仅显示TCP连接（同理可获得UDP连接）
+- `lsof -i:port`,显示与指定端口相关的网络信息
+- `lsof -i@host`,显示指定到指定主机的连接
+- `lsof  -i -sTCP:LISTEN`,找出监听端口
+- `lsof  -i -sTCP:ESTABLISHED`,找出已建立的连接
 
 # 发起网络操作

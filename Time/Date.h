@@ -34,6 +34,7 @@ public:
 
     bool valid() const { return julianDayNumber_ > 0; }
 
+    //格式类似1994-11-15
     string toIsoString() const;
     struct YearMonthDay yearMonthDay() const;
     int year() const { return yearMonthDay().year; }

@@ -1,8 +1,8 @@
 #ifndef HXMMXH_ACCEPTOR_H
 #define HXMMXH_ACCEPTOR_H
 
-#include "Reactor/Channel.h"
-#include "Sockets/Socket.h"
+#include "Channel.h"
+#include "Socket.h"
 
 #include <functional>
 
@@ -26,7 +26,7 @@ public:
 private:
     void handleRead();//监听套接字可读时采取的操作，会调用 newConnectionCallback_
     EventLoop *loop_;
-    Socket acceptSocket_;//监听套接字
+    Socket acceptSocket_; //监听套接字
     Channel acceptChannel_;
     NewConnectionCallback newConnectionCallback_;//接受新连接的回调函数
     bool listenning_;//是否开始监听
