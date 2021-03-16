@@ -1,3 +1,31 @@
+
+
+- SocketsOps，修改了套接字操作
+  - 在sockets命名空间内重写了常用的套接字函数
+    - 新建套接字，bind,listen,connect,accept,shutdown, close
+    - read,write
+    - struct sockaddr_in，struct sockaddr_in6，sockaddr三种套接字地址结构转换
+    - 从地址结构中取出IP地址和端口号，或者反过来
+- 创建一个InetAddress来封装地址
+  - 同时支持IPv4和IPv6地址
+  - 能通过端口号，ip地址构造
+  - 实现网络字节序和主机字节序的转换
+- 创建了一个Socket类来封装原生的套接字
+  - 构造函数的参数是一个原生的套接字描述符
+  - 析构时会自动关闭这个描述符
+  - 提供接口禁用Nagle算法，保活，端口重用
+
+
+
+
+
+
+
+
+
+
+
+
 [accpet错误代码](https://blog.csdn.net/21aspnet/article/details/8196671)
 
 
@@ -73,6 +101,5 @@ __u32 tcpi_total_retrans; /* 本连接的总重传个数 */
 
 #### 
 [Nagle算法](https://www.cnblogs.com/lshs/p/6038641.html)
+#
 
-
-## 常用套接字选项

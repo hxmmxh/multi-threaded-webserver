@@ -175,7 +175,7 @@ void TcpConnection::sendInLoop(const void *data, size_t len)
 
     assert(remaining <= len);
     //把剩余的数据写入缓冲区
-    //如果出现了错误，数据就不同再缓冲了，直接丢弃
+    //如果出现了错误，数据就不用再缓冲了，直接丢弃
     if (!faultError && remaining > 0)
     {
         size_t oldLen = outputBuffer_.readableBytes();
@@ -206,7 +206,7 @@ void TcpConnection::shutdown()
 void TcpConnection::shutdownInLoop()
 {
     loop_->assertInLoopThread();
-    //不在等待可写信号时才能关闭，防止丢失数据
+    //只有不在等待可写信号时才能关闭，防止丢失数据
     if (!channel_->isWriting())
     {
         //shutdown(sockfd, SHUT_WR)
@@ -302,10 +302,11 @@ void TcpConnection::connectEstablished()
     loop_->assertInLoopThread();
     assert(state_ == kConnecting);
     setState(kConnected);
-    //给Channel一个TcpConnection对象的指针指针，防止TcpConnection提前析构
+    //给Channel一个TcpConnection对象的指针，防止TcpConnection提前析构
     channel_->tie(shared_from_this());
     channel_->enableReading();
     //连接建立后的回调函数
+    // shared_from_this()返回this，保证调用connectionCallback_时TcpConnection对象一定存在
     connectionCallback_(shared_from_this());
 }
 

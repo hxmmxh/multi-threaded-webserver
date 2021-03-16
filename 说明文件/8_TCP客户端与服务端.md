@@ -1,137 +1,103 @@
-1. 套接字连接的建立
-    * [Acceptor](#Acceptor)
-    * [Connector](#Connector)
-2. 已连接套接字
-    * [TcpConnection](#TcpConnection)
-3. 服务端
-    * [TcpServer](#TcpServer)
-4. 客户端
-    * [Tcpclient](#Tcpclient)
 
 
----------------------------------------------
+- [Acceptor](#acceptor)
+  - [工作流程](#工作流程)
+  - [EMFILE,文件描述符耗尽处理方法](#emfile文件描述符耗尽处理方法)
+- [TcpServer](#tcpserver)
+  - [主要成员](#主要成员)
+  - [创建一个可用TcpServer对象的流程](#创建一个可用tcpserver对象的流程)
+- [TcpConnection](#tcpconnection)
+  - [主要成员](#主要成员-1)
+  - [工作流程](#工作流程-1)
+  - [读数据](#读数据)
+  - [写数据](#写数据)
+  - [关闭连接](#关闭连接)
+  - [高水位回调和低水位回调](#高水位回调和低水位回调)
+  - [四种回调函数](#四种回调函数)
+    - [正常状态下主动关闭连接](#正常状态下主动关闭连接)
+    - [强制关闭连接](#强制关闭连接)
+    - [边缘触发的读写问题](#边缘触发的读写问题)
+- [Connector](#connector)
+- [TcpClient](#tcpclient)
 
-## Acceptor
-- 供TcpServer使用，生命期由TcpServer控制
+
+
+# Acceptor
+
 - 功能是用于accept新的Tcp连接，并通过回调通知使用者
+- 属于一个TcpServer，由TcpServer负责创建和销毁
 
+## 工作流程
 
-### bind函数介绍
-```cpp
-#include <sys/socket.h> 
-int bind(int sockfd, const struct sockaddr *myaddr, socklen_t addrlen);
-```
-- 返回： 若成功则为0，若出错则为-1
-- 第二个参数是一个指向特定的地址结构的指针,第三个参数是该地址结构的长度。
-- 调用bind函数可以指定一个端口号，或指定一个IP地址，也可以两者都指定，还可以不指定.
-- 服务器在启动时捆绑众所周知端口，客户一般让内核选择临时端口
-- Tcp客户通常不把IP地址捆绑到它的套接字上，当连接套接字时，内核将根据所用外出网络接口来选择源IP地址
-- 如果TCP服务器没有把IP地址捆绑到它的套接字上，内核就把客户发送的SYN的目的地址作为服务器的源IP地址
+- TcpServer对象初始化时会新建一个Accoptor对象
+  - 需要提供套接字地址，可选项，一个EventLoop对象
+  - 构造函数中完成以下事情：
+  - 创建一个Socket套接字，设置好地址端口和可选项
+  - 创建一个Channel负责这个套接字
+  - Channel注册套接字可读的回调函数为handleRead
+  - 提前准备一个空闲的文件描述符
+- TcpServer开始监听时会调用Accetor的Listen函数
+  - 套接字开始Socket::listen
+  - Channel开始监听可读事件
+- 当有客户与服务器建立连接时，监听描述符变得可读，调用handleRead
+  - 调用Socket::accept返回已连接套接字描述符
+  - 调用newConnectionCallback_函数开始处理这个套接字
+    - newConnectionCallback_函数会在TcpServer对象初始化时被设置为TcpServer::newConnection
+  - 如果遇到了Emfile错误，如下处理
 
-|IP地址|端口|结果|
-|----|----|----|
-|通配地址|0|内核选择IP地址和端口|
-|通配地址|非0|内核选择IP地址，进程指定端口|
-|本地IP地址|0|进程指定IP地址，内核选择端口|
-|本地IP地址|非0|进程指定IP地址和端口|
-
-### listen函数介绍
-```cpp
-#include <sys/socket.h>
-int listen(int sockfd, int backlog);
-```
-- 返回： 若成功则为0，若出错则为-1
-- 第二个参数规定了内核应该为相应套接字队列的最大连接个数。
-- 监听套接字的两个队列：未完成连接队列/已完成连接队列
-  - 未完成连接队列：每个这样的SYN分节对应其中一项，已由某个客户发出并到达服务器，而服务器正在等待完成相应的TCP三路握手过程。这些套接字处于SYN_RCVD状态。
-  - 已完成连接队列：每个已完成TCP三路握手过程的客户对应其中一项。这些套接字处于ESTABLISHED状态。
-  - 在未完成连接队列中连接，若在RTT时间内还未完成三次握手，则超时并从该队列中删除
-  - 当进程调用accept时，已完成连接队列中的队头项将返回给进程，或者如果该队列为空，那么进程将被投入睡眠，直到TCP在该队列中放入一项才唤醒它。
-  - 当一个客户SYN到达时，若这些队列满了，TCP应该忽略这些该字节，而不应该发送RST。因为：这种情况时暂时的，客户TCP将重发SYN，期望不久就能在这些队列中有可用的空间。要是服务器TCP立即响应一个RST，客户的connect调用就会立即返回一个错误，强制应用进程处理这种情况，而不是让TCP的正常重传机制来处理。另外，客户无法区别响应SYN的RST究竟意味着“该端口没有服务器在监听”，还是意味着“该端口有服务器在监听，不过它的队列满了”
-
-### accept函数介绍
-```cpp
-#include <sys/socket.h>
-int accept(int sockfd, struct sockaddr *cliaddr, socklen_t *addrlen);
-```
-- 返回：若成功则为非负描述符，若出错则为-1
-- 第一个参数为监听套接字，返回值为已连接套接字。
-- 参数cliaddr和addrlen用来返回已连接的对端进程（客户）的协议地址。
-  - 调用前，我们将由*addrlen所引用的整数值置为由cliaddr所指的套接字地址结构的长度
-  - 返回时，该整数值即为由内核存放在该套接字地址结构内的确切字节数
-- 如果对返回的客户地址不感兴趣，那么可以把cliaddr和addrlen均置为空指针。
-- 在监听套接字变得可读时才调用accept
-  
-### 监听套接字和已连接套接字
-- 监听套接字：由socket创建，随后用作bind和listen的第一个参数的描述符
-- 已连接套接字：accept的返回值
-- 一个服务器通常仅仅创建一个监听套接字，它在该服务器的生命期内一直存在
-- 内核为每个由服务器进程接受的客户连接创建一个已连接套接字，当服务器完成对某个给定客户的服务时，相应的已连接套接字就被关闭
-
-### 获取新连接的方式
-- 每次accept一个socket
-- 每次循环accept，直到没有新连接到达
-- 每次尝试accept N个新连接，N的值一般是10
-- 后面两种方法适合短连接读物，这里采用的是第一种方法
-
-### 短连接和长连接
-[参考资料](https://blog.csdn.net/csdnlijingran/article/details/88343285)
-#### Tcp层
-* 短链接：指通信双方有数据交互时，就建立一个TCP连接，数据发送完成后，则断开此TCP连接  
-	`连接→数据传输→关闭连接→连接→数据传输→关闭连接~~~`
-* 长连接：指在一个TCP连接上可以连续发送多个数据包，在TCP连接保持期间，如果没有数据包发送，需要双方发检测包以维持此连接，一般需要自己做在线维持  
-`TCP连接→数据包传输→保持连接(心跳)→数据传输→保持连接(心跳)→……→关闭连接`
-* 在长连接中一般是没有条件能够判断读写什么时候结束，所以必须要加长度报文头。读函数先是读取报文头的长度，再根据这个长度去读相应长度的报文。
-* SO_KEEPALIVE套接字选项: 如果两小时内套接字的任一方向上都没有数据交换，Tcp就自动给对端发送一个保持存活探测分节(keep-alive probe)。会导致以下三种情况发生  
-	1. 对端以期望的ACK相应。两小时后继续发送下一个探测分节
-	2. 对端以RST响应，表示对端已崩溃并且已重新启动，该套接字会把待处理错误置为ECONNRESET，并关闭套接字
-	3. 对端没有响应，将另外发送8个探测分节，两两相隔75秒，试图得到响应。如果没有得到响应则放弃
-
-
-#### http层
-* 在HTTP/1.0中默认使用短连接。也就是说，客户端和服务器每进行一次HTTP操作，就建立一次连接，任务结束就中断连接
-* 从HTTP/1.1起，默认使用长连接，用以保持连接特性。当一个网页打开完成后，客户端和服务器之间用于传输HTTP数据的TCP连接不会关闭，客户端再次访问这个服务器时，会继续使用这一条已经建立的连接。
-#### 优缺点对比
-* 长连接
-	* 优点：可以省去较多的TCP建立和关闭的操作，减少浪费，节约时间。
-	* 缺点：服务器端有很多TCP连接时，会降低服务器的性能。管理所有的TCP连接，检测是否是无用的连接（长时间没有读写事件），并进行关闭等操作。server端需要采取一些策略，如关闭一些长时间没有读写事件发生的连接，这样可 以避免一些恶意连接导致server端服务受损；如果条件再允许就可以以客户端机器为颗粒度，限制每个客户端的最大长连接数
-	* 适用场景： 操作频繁（读写），点对点的通讯，而且连接数不能太多情况
-* 短连接
-	* 优点：对于服务器来说管理较为简单，存在的连接都是有用的连接，不需要额外的控制手段。
-	* 缺点：但如果客户请求频繁，将在TCP的建立和关闭操作上浪费较多时间和带宽。
-	* 适用场景：短连接用于并发量大，且每个用户无需频繁向服务器发数据包。 而像WEB网站的http服务一般都用短链接。因为长连接对于服务端来说会耗费一定的资源像，WEB网站这么频繁的成千上万甚至上亿客户端的连接用短连接会更省一些资源。
-### EMFILE,文件描述符耗尽处理方法
-* 当accept返回EMFILE时，意味着本进程的文件描述符已经达到上限，无法为新连接创建套接字文件描述符。但是，既然没有文件描述符来表示这个连接，也就无法close它，这个新连接会处于一直等待处理的状态。每次epoll_wait都会立刻返回。会使程序陷入busy loop。
-* 有7种解决做法，本程序选用的是第6种
+## EMFILE,文件描述符耗尽处理方法
+- 当accept返回EMFILE时，意味着本进程的文件描述符已经达到上限，无法为新连接创建套接字文件描述符。
+- 但是既然没有文件描述符来表示这个连接，也就无法close它，这个新连接会处于一直等待处理的状态。每次epoll_wait都会立刻返回。会使程序陷入busy loop。
+- 有7种解决做法，本程序选用的是第6种
     1. 调高进程的文件描述符数目。治标不治本
     2. 死等
     3. 退出程序
     4. 关闭监听套接字
     5. 用ET取代LT,不会陷入无限循环的状态
-    6. 提前准备一个空闲的文件描述符，遇到EMFILE时，先关闭这个空闲文件，获得一个文件描述符的名额，再accept拿到新连接的描述符，随后立刻close它，最后再重新打开一个空闲文件。
+    6. 提前准备一个空闲的文件描述符，遇到EMFILE时，先关闭这个空闲文件，获得一个文件描述符的名额，再accept拿到新连接的描述符，随后立刻close它，最后再重新打开一个空闲文件
     7. 自己设置一个稍微低点的文件描述符数量限制，超过这个限制就主动关闭新连接。
 
------------------------------------------------------------
-## Connector
-用于客户端主动发起连接，调用connect，当socket变得可写时表明连接建立完毕
-### connect函数介绍
-```cpp
-#include<sys/socket.h>
-int connect(int sockfd, const struct sockaddr *servaddr, socklen_t addrlen);
-```
-* 返回：若成功则为0，若出错则为-1 
-* 第二个参数，第三个参数分别是一个指向要连接的套接字地址结构的指针和该结构的大小。套接字地址结构必须包含有服务器的IP地址和端口号。
-* 客户在调用函数connect前不必非得调用bind函数，因为需要的话，内核会确定源IP地址，并选择一个临时端口作为源端口。
-* 如果是TCP套接字，调用connect函数将激发TCP的三路握手过程，而且仅在成功或错误时才退出，其中出错返回可能有以下几种情况：
-    * 若TCP客户没有收到SYN分节的响应，则返回ETIMEDOUT错误。
-    * 若对客户的SYN响应是RST（表示复位），则表明该服务器主机在我们指定的端口上没有进程在等待与之连接（例如服务器进程也许没有运行），返回ECONNREFUSED错误。产生RST的三个条件是：目的地为某端口的SYN到达，然而该端口上没有正在监听的服务器；TCP想取消一个已有连接；TCP接收到一个根本不存在的连接上的分节。
-    * 客户发出的SYN在中间的某个路由器上引发目的地不可达。客户主机内核保存该消息，并增大间隔时间重发SYN。若在某个规定的时间后仍未收到响应，则把保存的消息（ICMP错误）作为EHOSTTUNREACH或ENETUNREACH错误返回给进程。
-* 若connect失败则套接字不再可用，必须关闭。需要close当前的套接字描述符并重新调用socket。
-* 非阻塞套接字调用connect，如果返回0，表示连接已经完成，如果返回-1，那么期望收到的错误是EINPROGRESS，表示连接建立已经启动，但是尚未完成。
-* 对于非阻塞套接字调用connect不会立即完成，通常返回错误-1，错误码是EINPROGRESS，我们应该调用select或者poll等待套接字可写，然后使用getsockopt获取错误值，如果等于0就是连接成功。
+# TcpServer
 
---------------------------------------------------------
-## TcpConnection
+- 用于建立新连接
+- 为连接创建对应的TcpConnection对象
+- 拥有监听套接字listening socket
+
+## 主要成员
+- `unique_ptr<Acceptor> acceptor_`
+  - 用是unique_ptr为了方便自动析构
+  - 并且一个Acceptor只属于一个TcpServer
+- 
+
+## 创建一个可用TcpServer对象的流程
+- 新建一个EventLoop
+- 新建TcpServer对象
+  - 提供Server名称，套接字地址，可选项，还需要提供一个EventLoop对象`TcpServer(EventLoop *loop,const InetAddress &listenAddr,const std::string &nameArg,Option option = kNoReusePort);`
+  - 构造函数中完成以下操作：
+  - 创建一个Acceptor用于接收新连接,并设置接收到新连接的回调函数为newConnection
+  - 创建一个EventLoopThreadPool线程池对象,为的是把新连接分配倒线程池中
+- 调用setThreadNum设置线程池的大小，不设置默认是单线程
+- 调用start开始监听套接字
+  - 修改start_为1,表明开始监听
+  - 启动线程池
+  - 在所处的EventLoop中注册Acceptor::listen任务，开始监听
+  - 监听套接字表的可读时会调用newConnection
+    - 从线程池中取出一个线程，记录该线程中的EventLoop
+    - 创建一个TcpConnection对象
+      - 对象的名字为`服务端的名字+ip地址+TCP连接序号`
+      - 在ConncectionMap中记录这个对象
+      - 设置这个对象的回调函数
+      - 调用EventLoop::runInLoop运行TcpConnection::connectionEstablish()
+- 可以调用setMessageCallback，设置收到数据时服务端的操作
+- EventLoop调用loop()开始事件循环
+- 移除一个connection的流程
+  - 在ConncectionMap中删除这个对象
+  - 获取这个connection所在的事件循环
+  - 在那个EventLoop中注册connecetionDestory任务
+
+
+
+# TcpConnection
 
 - 用于表示已经建立的套接字连接
   - 表示一次Tcp连接，是不可再生的，一旦连接断开，这个对象就失去了作用
@@ -139,26 +105,92 @@ int connect(int sockfd, const struct sockaddr *servaddr, socklen_t addrlen);
 - 使用Channel来获取socket上的IO事件，然后自己处理wriable事件，而把readable事件通过MessageCallback传达给客户
 - 拥有Tcp已连接套接字，析构函数会关闭fd
 
-### 高水位回调和低水位回调
-* 发送缓冲区被清空则调用WriteCompleteCallback
-* 输入缓冲区的长度超过指定的大小，就调用HighWaterMarkCallback
+
+## 主要成员
+
+- 已连接套接字和响应的监听Channel
+- 本地地址和对端地址
+- 输入输出缓冲区，高水位阈值
+- 一系列回调函数
 
 
----------------------------------------------------------
-## TcpServer
-* 为连接创建对应的TcpConnection对象
-* 拥有监听套接字listening socket
+## 工作流程
 
-### 初始化工作
+- 在accpet到一个新连接时，由TcpServer创建一个TcpConnection对象
+  - 设置state_为 正在建立连接
+  - 创建一个Socket类封装这个套接字（传入的是套接字描述符）
+  - 创建一个Channel用于监听这个套接字
+  - 注册这个Channel的四个回调函数（可读，可写，出错，已关闭）
+  - 设置套接字的SO_KEEPALIVE选项，定时发送保存存活探测分节
+  - 设置高水位阈值
+- TcpServer随后会运行connectionEstablish函数
+  - 设置state_为已建立连接
+  - Channel开始监听可读事件
+  - 给Channel一个TcpConnection对象的指针，防止TcpConnection提前析构
+  - 调用connectionCallback_，默认是defaultConnectionCallback，仅仅是记录一下这个连接的相关信息
+- 需要服务端程序设置一些函数调用
+  - setConnectionCallback
+  - setMessageCallback
+  - setWriteCompleteCallback
+  - setHighWaterMarkCallback
+  - setCloseCallback
+
+## 读数据
+
+- TcpConnection对象建立是就会开始监听可读事件
+- 可读事件就绪时会调用handleRead
+- 把数据写入到inputBuffer_，随后调用消息处理函数messageCallback_
+- 读数据是被动的
+
+## 写数据
+
+- 写数据接口,send
+  - 判断状态为已连接
+  - 如果是在所属的IO线程中，直接调用sendInLoop，否则用runInLoop注册sendInLoop函数
+- 实际完成写数据操作的函数,sendInLoop
+  - 判断连接状态，如果连接已断开就放弃发送
+  - 如果发送缓冲区中已经有待发送的数据，就不能直接写入套接字了，会造成数据乱序，只能把数据先写入缓冲区
+  - 如果发送缓冲区是空并且Channel不在监听可写事件，则可以直接开始写入
+    - 记录写入的字节数，和剩余的字节数
+    - 如果数据写完了调用writeCompleteCallback_
+    - 没写完就把剩下的数据写入outputBuffer_缓冲区
+  - 写入数据到缓冲区操作
+    - 如果数据大小超过了高水位值，调用highWaterMarkCallback_
+    - 开始监听可写操作
+    - 在handlderwrite中发送剩下的数据
+
+## 关闭连接
 
 
-### 建立新连接
-* 等待新连接到来，新连接到达时，回调newConnection()
-* 调用getNextLoop()来取得EventLoop,并生成新连接的名字
-* 创建TcpConnection对象，加入ConncectionMap,设置好回调函数
-* 调用EventLoop::runInLoop运行TcpConnection::connectionEstablish()
+## 高水位回调和低水位回调
+- 发送缓冲区被清空则调用WriteCompleteCallback
+- 输入缓冲区的长度超过指定的大小，就调用HighWaterMarkCallback
 
-### 创建线程池
+
+## 四种回调函数
+- handleRead
+  - 调用readfd把数据一次性读入inputBuffer缓冲区中
+  - 如果读入的字节数大于0，调用消息处理函数messageCallback_
+  - 如果读到的字节数为0，说明对方已经关闭，调用handleClose关闭连接
+  - 如果读到的字节数小于0，说明出错，调用handleError处理错误
+- handleWrite
+  - 首先判断Channel是否在监听可写事件，在的话才开始写入
+  - 写outputBuffer_缓冲区中的数据到套接字文件描述符
+  - 从缓冲区中取走已写的字节数
+  - 如果缓冲区已空，即数据发送完毕，则停止观测可写事件，防止busy loop,并调用writeCompleteCallback_，没有的话，继续观测
+  - 如果是在断开连接状态，数据发送完了就要断开连接
+- handleClose
+  - 把状态设置为已断开连接
+  - 把Channel监听的事件清空
+  - 调用CloseCallback
+- handleError
+  - 简单的输出错误信息
+
+
+
+
+
+
 
 
 
@@ -191,17 +223,14 @@ int connect(int sockfd, const struct sockaddr *servaddr, socklen_t addrlen);
 
 
 
+# Connector
+
+- 用于客户端调用，主动建立连接
+- 调用connect，当套接字变得可写时表明连接建立完毕
 
 
+# TcpClient
 
-
-
-
-------------------------------------------------------------
-
-## TcpClient
-Tcp客户端的实现
-* 每个TcpClient只管理一个TcpConnection
-
-
-[SO_REUSEPORT](https://blog.csdn.net/Yaokai_AssultMaster/article/details/68951150)
+- 具备TcpConnection断开后重新连接的功能
+  - Connector也有反复尝试连接的功能，因此客户端和服务端的启动顺序无关紧要
+- 连接断开后初次重试的延迟应该有随机性，因为如果连接同时断开后又同时再次发起连接，会给服务端带来短期的大负载

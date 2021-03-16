@@ -22,7 +22,8 @@ ssize_t Buffer::readFd(int fd, int* savedErrno)
   } else if (static_cast<size_t>(n) <= writable) {
     writerIndex_ += n;
   } else {
-    //把buffer写满了，再把extrabuf里的数据append到buffer中
+    //返回值大于 writable
+    //说明把buffer写满了，再把extrabuf里的数据append到buffer中
     writerIndex_ = buffer_.size();
     append(extrabuf, n - writable);
   }

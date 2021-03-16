@@ -1,6 +1,6 @@
-#include "../TcpServer.h"
-#include "../Reactor/EventLoop.h"
-#include "../Sockets/InetAddress.h"
+#include "TcpServer.h"
+#include "EventLoop.h"
+#include "InetAddress.h"
 #include <stdio.h>
 #include <unistd.h>
 

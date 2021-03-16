@@ -24,7 +24,7 @@ public:
     void listen();
 
 private:
-    void handleRead();//监听套接字可读时采取的操作，会调用 newConnectionCallback_
+    void handleRead();//监听套接字可读时采取的操作，会调用newConnectionCallback_
     EventLoop *loop_;
     Socket acceptSocket_; //监听套接字
     Channel acceptChannel_;

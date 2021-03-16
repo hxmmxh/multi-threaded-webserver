@@ -289,14 +289,15 @@ public:
 
     ssize_t readFd(int fd, int *savedErrno);
 
-    //下面四个函数用于解析http报文
+    // 下面四个函数用于解析http报文
+    // 查找第一个出现crlf的位置
     const char *findCRLF() const
     {
         const char *CRLF = "\r\n";
         const char *crlf = std::search(peek(), beginWrite(), CRLF, CRLF + 2);
         return crlf == beginWrite() ? NULL : crlf;
     }
-
+    // 查找第一个出现crlf的位置，没有的话返回null
     const char *findCRLF(const char *start) const
     {
         assert(peek() <= start);
@@ -305,9 +306,10 @@ public:
         const char *crlf = std::search(start, beginWrite(), CRLF, CRLF + 2);
         return crlf == beginWrite() ? NULL : crlf;
     }
-
+    // 查找EOL(也是\n)的位置
     const char *findEOL() const
     {
+        // 从buf所指内存区域的前count个字节查找字符ch
         const void *eol = memchr(peek(), '\n', readableBytes());
         return static_cast<const char *>(eol);
     }
@@ -338,7 +340,7 @@ private:
         {
             buffer_.resize(writerIndex_ + len);
         }
-        //现在的空间使够的，知识prepend所占空间太大，把数据往前移，给writable腾出空间
+        //现在的空间是够的，只是prepend所占空间太大，把数据往前移，给writable腾出空间
         else
         {
             assert(kCheapPrepend < readerIndex_);

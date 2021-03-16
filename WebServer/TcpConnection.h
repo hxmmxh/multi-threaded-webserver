@@ -17,6 +17,7 @@ class Channel;
 class EventLoop;
 class Socket;
 
+// enable_shared_from_this为了将this指针也能变身为shared_ptr
 class TcpConnection : public std::enable_shared_from_this<TcpConnection>
 {
 public:

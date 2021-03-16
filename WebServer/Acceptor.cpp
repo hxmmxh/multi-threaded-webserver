@@ -1,9 +1,9 @@
 #include "Acceptor.h"
 
 #include "Logging.h"
-#include "Reactor/EventLoop.h"
-#include "Sockets/InetAddress.h"
-#include "Sockets/SocketsOps.h"
+#include "EventLoop.h"
+#include "InetAddress.h"
+#include "SocketsOps.h"
 
 #include <cerrno>
 #include <fcntl.h>

@@ -1,8 +1,8 @@
-#include "../Reactor/EventLoop.h"
-#include "../Sockets/InetAddress.h"
-#include "../TcpClient.h"
+#include "EventLoop.h"
+#include "InetAddress.h"
+#include "TcpClient.h"
 
-#include "../../Log/Logging.h"
+#include "Logging.h"
 
 #include <utility>
 

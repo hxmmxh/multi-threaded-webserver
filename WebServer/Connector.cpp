@@ -8,7 +8,8 @@
 
 using namespace hxmmxh;
 
-//类的静态成员类内初始化后也要在类外定义一下，不能再指定一个初始值
+//类的常量静态成员可以在类内初始化
+//但也要在类外定义一下，类外定义不能再指定一个初始值
 const int Connector::kMaxRetryDelayMs;
 
 Connector::Connector(EventLoop *loop, const InetAddress &serverAddr)
@@ -71,6 +72,7 @@ void Connector::connect()
 {
   int sockfd = sockets::createNonblockingOrDie(serverAddr_.family());
   int ret = sockets::connect(sockfd, serverAddr_.getSockAddr());
+  // 成功返回0，出错返回-1
   int savedErrno = (ret == 0) ? 0 : errno;
   switch (savedErrno)
   {

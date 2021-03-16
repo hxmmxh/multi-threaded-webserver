@@ -1,7 +1,7 @@
 #ifndef HXMMXH_HTTPSERVER_H
 #define HXMMXH_HTTPSERVER_H
 
-#include "../WebServer/TcpServer.h"
+#include "TcpServer.h"
 
 #include <string>
 

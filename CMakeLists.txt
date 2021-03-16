@@ -21,7 +21,8 @@ add_subdirectory(Log)
 add_subdirectory(Sockets)
 add_subdirectory(Timer)
 add_subdirectory(Reactor)
+add_subdirectory(WebServer)
+add_subdirectory(Example)
 
-# add_subdirectory(WebServer)
 # add_subdirectory(http)
 

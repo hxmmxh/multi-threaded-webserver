@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "set": "cpp"
+        "set": "cpp",
+        "atomic": "cpp"
     }
 }

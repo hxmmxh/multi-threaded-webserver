@@ -34,8 +34,10 @@ public:
     const std::string &ipPort() const { return ipPort_; }
     const std::string &name() const { return name_; }
     EventLoop *getLoop() const { return loop_; }
-
+    
+    // 设置线程池的大小
     void setThreadNum(int numThreads);
+    // 设置每个线程初始化的操作
     void setThreadInitCallback(const ThreadInitCallback &cb)
     {
         threadInitCallback_ = cb;

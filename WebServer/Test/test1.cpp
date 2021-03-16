@@ -1,7 +1,7 @@
-#include "../Acceptor.h"
-#include "../Reactor/EventLoop.h"
-#include "../Sockets/InetAddress.h"
-#include "../Sockets/SocketsOps.h"
+#include "Acceptor.h"
+#include "EventLoop.h"
+#include "InetAddress.h"
+#include "SocketsOps.h"
 #include <unistd.h>
 #include <stdio.h>
 

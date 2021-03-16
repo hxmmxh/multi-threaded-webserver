@@ -25,8 +25,9 @@ TcpServer::TcpServer(EventLoop *loop,
       //下面两个默认函数的定义在TcpConnection.cpp
       connectionCallback_(defaultConnectionCallback),
       messageCallback_(defaultMessageCallback),
-      nextConnId_(1),
-      started_(0)
+      started_(0),
+      nextConnId_(1)
+      
 {
   //接收到新连接的回调函数
   acceptor_->setNewConnectionCallback(
@@ -41,7 +42,7 @@ TcpServer::~TcpServer()
   for (auto &item : connections_)
   {
     TcpConnectionPtr conn(item.second);
-    item.second.reset();
+    item.second.reset(); //unique_ptr释放当前指向的对象
     conn->getLoop()->runInLoop(
         std::bind(&TcpConnection::connectDestroyed, conn));
   }
@@ -56,13 +57,14 @@ void TcpServer::setThreadNum(int numThreads)
 //开始监听
 void TcpServer::start()
 {
+  //原子操作，读取并修改被封装的值
   if (started_.exchange(1) == 0)
   {
     //线程池这时开始启动，要在start前指定线程池的大小
     threadPool_->start(threadInitCallback_);
     //acceptor还没有开始监控套接字
     assert(!acceptor_->listenning());
-    //开始监听
+    //在自己所在的事件循环中开始监听
     loop_->runInLoop(
         std::bind(&Acceptor::listen, acceptor_.get()));
   }

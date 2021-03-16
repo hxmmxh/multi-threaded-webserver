@@ -53,7 +53,9 @@ inline uint16_t networkToHost16(uint16_t net16)
 class InetAddress 
 {
 public:
+    // 只给出端口号
     explicit InetAddress(uint16_t port = 0, bool loopbackOnly = false, bool ipv6 = false);
+    // 同时给出IP地址和端口号
     InetAddress(StringArg ip, uint16_t port, bool ipv6 = false);
     explicit InetAddress(const struct sockaddr_in &addr) : addr_(addr) {}
     explicit InetAddress(const struct sockaddr_in6 &addr) : addr6_(addr) {}
