@@ -126,7 +126,7 @@ void Connector::restart()
   startInLoop();
 }
 
-//套接字变得可写时，表明连接建立完毕
+//在Channel中监听套接字变得可写，可写则表明连接建立完毕
 void Connector::connecting(int sockfd)
 {
   setState(kConnecting);

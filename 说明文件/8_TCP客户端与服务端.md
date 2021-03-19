@@ -18,6 +18,7 @@
     - [强制关闭连接](#强制关闭连接)
     - [边缘触发的读写问题](#边缘触发的读写问题)
 - [Connector](#connector)
+  - [工作流程](#工作流程-2)
 - [TcpClient](#tcpclient)
 
 
@@ -112,6 +113,9 @@
 - 本地地址和对端地址
 - 输入输出缓冲区，高水位阈值
 - 一系列回调函数
+  - 每当有新连接建立时，会调用connectionCallback_
+  - 每当有新数据可读时，会调用messageCallback_
+  - 每当数据写完时，会调用writeCompleteCallback_
 
 
 ## 工作流程
@@ -127,7 +131,7 @@
   - 设置state_为已建立连接
   - Channel开始监听可读事件
   - 给Channel一个TcpConnection对象的指针，防止TcpConnection提前析构
-  - 调用connectionCallback_，默认是defaultConnectionCallback，仅仅是记录一下这个连接的相关信息
+  - 调用connectionCallback_
 - 需要服务端程序设置一些函数调用
   - setConnectionCallback
   - setMessageCallback
@@ -182,6 +186,7 @@
 - handleClose
   - 把状态设置为已断开连接
   - 把Channel监听的事件清空
+  - 调用connectionCallback_
   - 调用CloseCallback
 - handleError
   - 简单的输出错误信息
@@ -225,12 +230,35 @@
 
 # Connector
 
-- 用于客户端调用，主动建立连接
+- 用于TcpClient客户端调用，主动建立连接
 - 调用connect，当套接字变得可写时表明连接建立完毕
 
+- 套接字是一次性的，一旦出错就无法恢复，只能关闭重来
+- 而Connector是可以反复使用的，每次尝试连接都要使用新的套接字文件描述符和新的Channel对象。要注意析构原来的
+  - 用unqiue_ptr管理Channel，每次使用新Channel时，调用reset
+
+## 工作流程
+
+- 构造函数需要传入一个EventLoop和一个地址，一般在TcpClient的初始化过程中构造
+- 随后会被TcpClient调用start，开始建立连接，实际工作是在connect函数中进行的
+  - 先创建套接字
+  - 然后调用socket::connect,成功返回0，出错返回-1
+    - 由于是非阻塞的套接字，有些错误码仅代表提前返回（一般是EINPROGRESS),调用connecting
+      - 新建一个Channel，注册可读出错回调函数，然后监听可写事件
+    - 对于可修正的错误，尝试重连，调用retry
+    - 对于无法挽回的错误，关闭套接字并退出
+- connect的套接字可写时
+  - 释放对应的Channel
+  - 使用getsockopt获取错误值，如果等于0就是连接成功,如果出错调用retry,发生了自连接也调用retry
+  - 如果正常建立了连接，调用newConnectionCallback_
+- retry
+  - 需要先关闭之前的套接字文件描述符
+  - 在事件循环的定时器中注册startInLoop函数
+  - 每次重试的时间加长
 
 # TcpClient
 
+- 每个TcpClient管理一个TcpConnection
 - 具备TcpConnection断开后重新连接的功能
   - Connector也有反复尝试连接的功能，因此客户端和服务端的启动顺序无关紧要
 - 连接断开后初次重试的延迟应该有随机性，因为如果连接同时断开后又同时再次发起连接，会给服务端带来短期的大负载
