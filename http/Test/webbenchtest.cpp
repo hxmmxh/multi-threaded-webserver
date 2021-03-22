@@ -1,6 +1,6 @@
-#include "../HttpServer.h"
-#include "../../WebServer/Reactor/EventLoop.h"
-#include "../../Log/Logging.h"
+#include "HttpServer.h"
+#include "EventLoop.h"
+#include "Logging.h"
 
 #include <signal.h>
 

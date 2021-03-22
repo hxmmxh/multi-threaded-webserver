@@ -1,6 +1,6 @@
-#include "../../WebServer/Reactor/EventLoop.h"
-#include "../../WebServer/TcpClient.h"
-#include "../../Log/Logging.h"
+#include "EventLoop.h"
+#include "TcpClient.h"
+#include "Logging.h"
 
 #include <utility>
 

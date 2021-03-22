@@ -24,5 +24,5 @@ add_subdirectory(Reactor)
 add_subdirectory(WebServer)
 add_subdirectory(Example)
 add_subdirectory(chat)
-# add_subdirectory(http)
+add_subdirectory(http)
 

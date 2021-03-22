@@ -1,6 +1,6 @@
-#include "../HttpParse.h"
-#include "../HttpRequest.h"
-#include "../../WebServer/Buffer.h"
+#include "HttpParse.h"
+#include "HttpRequest.h"
+#include "Buffer.h"
 #include <iostream>
 
 using namespace std;

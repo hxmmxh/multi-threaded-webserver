@@ -106,7 +106,9 @@ public:
     void setPath(const char *start, const char *end)
     {
         path_.assign(start, end);
+        // 找个最后一个/，之后的是文件名，之前的是路径
         size_t slash = path_.find_last_of('/');
+        // 如果没有找到，就说明没有文件名
         if(slash==std::string::npos)
             filename_ = path_;
         else
@@ -140,17 +142,19 @@ public:
 
     //格式为 首部字段名：字段值
     //例如 Content_Type: text/html
-    //colon:冒号
-    //end指向'/r'
+    //colon:冒号所在的位置，分开了字段名和字段值
+    //end指向'\r\n'
     void addHeader(const char *start, const char *colon, const char *end)
     {
         std::string field(start, colon);
         ++colon;
+        // 去除前面的空格
         while (colon < end && isspace(*colon))
         {
             ++colon;
         }
         std::string value(colon, end);
+        // 去除末尾的空格
         while (!value.empty() && isspace(value[value.size() - 1]))
         {
             value.resize(value.size() - 1);

@@ -41,6 +41,7 @@ void HttpResponse::appendToBuffer(Buffer *output) const
         output->append(header.second);
         output->append("\r\n");
     }
+    // 插入空行
     output->append("\r\n");
     output->append(body_);
 }

@@ -20,6 +20,7 @@ bool HttpParse::processRequestLine(const char *begin, const char *end)
         space = std::find(start, end, ' ');
         if (space != end)
         {
+            // ？之前的是路径，之后的是询问字段
             const char *question = std::find(start, space, '?');
             if (question != space)
             {
@@ -31,6 +32,7 @@ bool HttpParse::processRequestLine(const char *begin, const char *end)
                 request_.setPath(start, space);
             }
             start = space + 1;
+            // 支持两个版本
             succeed = end - start == 8 && std::equal(start, end - 1, "HTTP/1.");
             if (succeed)
             {
@@ -90,10 +92,12 @@ bool HttpParse::parseRequest(Buffer *buf, Timestamp receiveTime)
             const char *crlf = buf->findCRLF();
             if (crlf)
             {
+                // 找到：所在的位置
                 const char *colon = std::find(buf->peek(), crlf, ':');
                 if (colon != crlf)
                 {
                     request_.addHeader(buf->peek(), colon, crlf);
+                    // 移动到下一行
                     buf->retrieveUntil(crlf + 2);
                     if (buf->readableBytes() == 0)
                     {
@@ -113,7 +117,7 @@ bool HttpParse::parseRequest(Buffer *buf, Timestamp receiveTime)
                 hasMore = false;
             }
         }
-        //解析空行
+        //解析空行，只有\r\n
         else if (state_ == ExpectEmptyline)
         {
             const char *crlf = buf->findCRLF();
